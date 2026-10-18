@@ -76,7 +76,7 @@
     --note-ink: #bfe6cc;
     --note-label: #7bbf95;
     --note-seal: rgba(127, 211, 156, 0.35);
-    --note-status-bg: rgba(127, 211, 156, 0.12);
+    --note-status-bg: rgba(127, 211, 156, 0.18);
     --note-status-ink: #8fd3a8;
     --on-note: #10241a;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.35);
@@ -857,9 +857,8 @@ button:disabled {
 
 .step-hint {
   display: block;
-  font: 0.66rem/1.4 var(--mono);
+  font: 0.68rem/1.4 var(--mono);
   color: var(--ink-soft);
-  opacity: 0.85;
 }
 
 .step-name,
@@ -867,21 +866,31 @@ button:disabled {
   transition: color 0.15s ease;
 }
 
-.stepper[data-step="1"] .step:nth-child(1) .step-dot,
+/* Completed stages: filled with a check mark. */
 .stepper[data-step="2"] .step:nth-child(1) .step-dot,
 .stepper[data-step="3"] .step:nth-child(1) .step-dot,
+.stepper[data-step="3"] .step:nth-child(2) .step-dot {
+  border-color: var(--note);
+  background: var(--note);
+  color: var(--on-note);
+  font-size: 0;
+}
+
+.stepper[data-step="2"] .step:nth-child(1) .step-dot::after,
+.stepper[data-step="3"] .step:nth-child(1) .step-dot::after,
+.stepper[data-step="3"] .step:nth-child(2) .step-dot::after {
+  content: "✓";
+  font: 700 0.85rem/1 var(--mono);
+}
+
+/* Current stage: filled, numbered, double ring. */
+.stepper[data-step="1"] .step:nth-child(1) .step-dot,
 .stepper[data-step="2"] .step:nth-child(2) .step-dot,
-.stepper[data-step="3"] .step:nth-child(2) .step-dot,
 .stepper[data-step="3"] .step:nth-child(3) .step-dot {
   border-color: var(--note);
   background: var(--note);
   color: var(--on-note);
-}
-
-.stepper[data-step="1"] .step:nth-child(1) .step-dot,
-.stepper[data-step="2"] .step:nth-child(2) .step-dot,
-.stepper[data-step="3"] .step:nth-child(3) .step-dot {
-  box-shadow: 0 0 0 4px var(--note-tint);
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5.5px var(--note);
 }
 
 .stepper[data-step="1"] .step:nth-child(1) .step-name,
@@ -1147,7 +1156,7 @@ input::placeholder {
   margin: 2rem 0 0;
   color: var(--ink-soft);
   text-align: center;
-  font: 0.72rem/1.5 var(--mono);
+  font: 0.78rem/1.5 var(--mono);
 }
 
 .credits a {
