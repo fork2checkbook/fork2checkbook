@@ -14,6 +14,7 @@ from typing import Any
 from web.rgb.adapter import RgbBillAdapter
 from web.rgb.config import BillRole, RgbSettings
 from web.rgb.native import RgbLibBackend
+from web.rgb.sat_policy import MIN_COLORABLE_UTXO_SAT
 
 
 def _balance(value: Any) -> dict[str, int]:
@@ -257,7 +258,9 @@ def main() -> None:
     send.add_argument("--expires-seconds", type=int, default=900)
     create_utxos = subparsers.add_parser("create-utxos")
     create_utxos.add_argument("--num", type=int, default=1)
-    create_utxos.add_argument("--size-sat", type=int, default=8000)
+    create_utxos.add_argument(
+        "--size-sat", type=int, default=MIN_COLORABLE_UTXO_SAT
+    )
     import_cmd = subparsers.add_parser("import-consignment")
     import_cmd.add_argument("path", type=Path)
     args = parser.parse_args()

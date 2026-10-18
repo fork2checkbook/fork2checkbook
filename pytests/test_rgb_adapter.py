@@ -92,6 +92,13 @@ def test_settings_default_wallet_label_is_role_specific(tmp_path):
     configured = RgbSettings.from_env(env(tmp_path, BILL_ROLE="A"))
 
     assert configured.wallet_label == "Wallet A"
+    assert configured.fee_rate == 1
+    assert configured.witness_amount_sat == 1_000
+
+
+def test_settings_reject_witness_below_supported_minimum(tmp_path):
+    with pytest.raises(SettingsError, match="at least 1000 sats"):
+        RgbSettings.from_env(env(tmp_path, RGB_WITNESS_AMOUNT_SAT="999"))
 
 
 def test_settings_reject_unsafe_wallet_label(tmp_path):

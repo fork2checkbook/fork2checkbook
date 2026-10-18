@@ -9,6 +9,10 @@ bytes, or wallet datadir. Historical test records remain in their dedicated
 documents; when summary copy disagrees with this ledger, this ledger and the
 wallet journals are authoritative.
 
+The frozen chronological verification artifact, including full block hashes
+and block times, is
+[`evidence-artifacts/transacionEvicende.md`](evidence-artifacts/transacionEvicende.md).
+
 ## Block verification index
 
 All 16 transaction IDs below were checked against the live Mutinynet Esplora

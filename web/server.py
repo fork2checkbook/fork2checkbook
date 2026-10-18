@@ -624,7 +624,8 @@ def _bearer_funding_capacity_pending(outcome: dict[str, object]) -> dict[str, An
         "expiration_timestamp": int(plan["expiration_timestamp"]),
         "confirmation_phrase": f"CONFIRM {plan['plan_id']}",
         "note": (
-            "The rejected RGB send created no transfer. Create one 8,000-sat "
+            "The rejected RGB send created no transfer. Create one "
+            f"{int(plan['utxo_size_sat']):,}-sat "
             "colorable UTXO in this dock wallet, using a separate Bitcoin "
             "transaction and confirmation. This does not fund the note yet."
         ),

@@ -3,7 +3,7 @@ stateDiagram-v2
 
     [*] --> PREPARING
     PREPARING --> AWAITING_FUNDING: immutable funding plan
-    AWAITING_FUNDING --> BTC_TOPUP_PLANNED: note fee reserve below 2,000 sats
+    AWAITING_FUNDING --> BTC_TOPUP_PLANNED: note reserve below calculated minimum
     BTC_TOPUP_PLANNED --> BTC_TOPUP_BROADCAST_RECORDED: separate exact confirmation
     BTC_TOPUP_BROADCAST_RECORDED --> AWAITING_FUNDING: confirmed reserve and fresh RGB plan
     AWAITING_FUNDING --> FUNDING_IMPORTED: exact confirmation and broadcast

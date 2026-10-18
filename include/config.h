@@ -5,8 +5,14 @@
 // Board-specific hardware. The production default remains the WEMOS LOLIN32;
 // the TTGO profile is selected only by the ttgo-lora32-test environment.
 #if defined(RGB_BILL_WAVESHARE_S3)
-constexpr char BLE_DEVICE_NAME[] = "RgbBill-Watch";
-constexpr char BLE_IDENTITY[] = "bill-waveshare-s3-v1";
+#ifndef FORK2CHECKBOOK_BLE_DEVICE_NAME
+#define FORK2CHECKBOOK_BLE_DEVICE_NAME "RgbBill-Watch"
+#endif
+#ifndef FORK2CHECKBOOK_BLE_IDENTITY
+#define FORK2CHECKBOOK_BLE_IDENTITY "bill-waveshare-s3-v1"
+#endif
+constexpr char BLE_DEVICE_NAME[] = FORK2CHECKBOOK_BLE_DEVICE_NAME;
+constexpr char BLE_IDENTITY[] = FORK2CHECKBOOK_BLE_IDENTITY;
 #elif defined(RGB_BILL_TTGO_LORA32_V13)
 #if defined(RGB_BILL_TTGO_EXTERNAL_OLED)
 // Active TTGO bill profile: replacement four-wire SSD1306-compatible OLED on

@@ -177,10 +177,11 @@ Required invariants:
    `send_btc` to the bound note address; it cannot authorize the RGB funding
    send. A confirmed top-up always causes the stale RGB plan to be superseded
    before a new RGB confirmation is shown.
-   The current 2,000-sat default proved insufficient after a redemption
-   capacity transaction in the watch-mediated run. Until sizing is automated,
-   the operator verifies the fresh plan's vanilla-sat inventory and adds only
-   valueless Mutinynet sats before creating another immutable plan.
+   New plans compute the minimum supported reserve for the controlled
+   single-input note shape. At 1 sat/vB it is 2,411 sats: one 1,000-sat
+   colorable output, a measured 213-vB capacity fee, the 1,000-sat witness,
+   and a measured 198-vB RGB-send fee. Higher configured fee rates scale both
+   fee components. Inventory is still rechecked before every broadcast.
 7. Broadcast results and exact consignment path/hash are committed before the
    API reports success.
 8. An ambiguous send is never retried automatically. A pinned rgb-lib
@@ -283,7 +284,7 @@ and one recovery explanation.
 | Priority | Question | Current result | Next proof or fallback |
 | --- | --- | --- | --- |
 | P0 | Can a fresh disposable wallet receive and later send this USDT? | **Accepted live in both directions.** The latest run settled +5 USDT into previously unknown Wallet A after TTGO → watch → WEMOS relay. | Preserve direct mode as fallback. |
-| P0 | How many sats/UTXOs must N hold? | **Measured live.** Redemption required a free colorable UTXO. The latest 1,000-sat capacity transaction left only 691 vanilla sats from the automatic 2,000-sat reserve, so an operator top-up was required. | Increase or compute reserve before judging and pre-create capacity. |
+| P0 | How many sats/UTXOs must N hold? | **Measured and implemented.** The accepted run proved that 2,000 sats was insufficient. New one-input plans use a 1,000-sat colorable output plus measured 213-vB capacity fee, 1,000-sat witness, and measured 198-vB RGB-send fee: 2,411 sats at 1 sat/vB. | Live-accept the new minimum policy; retain exact inventory checks and allow an explicit higher fee rate if relay policy changes. |
 | P0 | Can recovery avoid duplicate sends? | **Accepted in tests and live journal.** Confirmation, broadcast, import, and settlement states are durable; refresh replay performs no send. | Manual reconciliation remains for unknown send outcomes. |
 | P0 | Does bearer relay persist across reboot? | **Accepted live.** The original 603-byte WEMOS → TTGO capsule restored after reboot; a later funded capsule crossed TTGO → Waveshare watch → WEMOS and extracted with exact SHA-256. | Direct mode remains fallback. |
 | P0 | Is QVAC 600M reliable on five intents? | Primary live intents are integrated behind deterministic policy; fixed adversarial reliability is still open. | Run the checked-in eval; buttons plus truthful explanation if below threshold. |

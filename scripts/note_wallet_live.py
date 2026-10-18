@@ -30,6 +30,7 @@ from web.rgb.note_live import (
     renew_live_redemption_plan,
     resume_live_funding_plan,
 )
+from web.rgb.sat_policy import MIN_COLORABLE_UTXO_SAT
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -483,7 +484,9 @@ def main() -> None:
     prepare_capacity.add_argument(
         "--vault-root", type=Path, default=DEFAULT_VAULT_ROOT
     )
-    prepare_capacity.add_argument("--utxo-size-sat", type=int, default=8_000)
+    prepare_capacity.add_argument(
+        "--utxo-size-sat", type=int, default=MIN_COLORABLE_UTXO_SAT
+    )
     prepare_capacity.add_argument("--plan-lifetime-seconds", type=int, default=900)
     confirm_capacity = subparsers.add_parser(
         "confirm-redemption-capacity",

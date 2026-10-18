@@ -36,6 +36,7 @@ from web.rgb.note_live import (
     prepare_live_redemption_capacity_plan,
     prepare_live_redemption_after_capacity,
     recover_live_redemption,
+    reconcile_live_funding_btc_topup_prebroadcast_rejection,
     reconcile_live_redemption_prebroadcast_rejection,
     refresh_live_redemption_settlement,
     refresh_live_redemption_capacity,
@@ -165,7 +166,7 @@ def test_issuing_dock_funds_note_btc_reserve_with_separate_confirmation(tmp_path
             assert (address, amount, fee_rate, skip_sync) == (
                 "tb1ptest",
                 2_000,
-                2,
+                1,
                 False,
             )
             assert json.loads(paths.funding_btc_topup_plan_file.read_text())[
@@ -275,6 +276,103 @@ def test_issuing_dock_funds_note_btc_reserve_with_separate_confirmation(tmp_path
 def test_either_dock_profile_may_issue_or_redeem(tmp_path):
     _validate_sender(_destination(tmp_path))
     _validate_destination(_sender(tmp_path))
+
+
+def test_ambiguous_btc_topup_can_only_replan_after_unchanged_wallet_proof(tmp_path):
+    sender = _sender(tmp_path)
+    paths = LiveNotePaths.create(tmp_path / ".note-vault", "note-1")
+    _atomic_json(paths.plan_file, redacted_plan(_plan()))
+    _atomic_json(
+        paths.manifest_file,
+        {
+            "version": LIVE_NOTE_VERSION,
+            "network": "mutinynet",
+            "note_id": "note-1",
+            "state": "AWAITING_FUNDING",
+            "master_fingerprint": "note-fingerprint",
+        },
+    )
+
+    class Wallet:
+        def get_btc_balance(self, *_args):
+            return SimpleNamespace(
+                vanilla=SimpleNamespace(spendable=10_000),
+                colored=SimpleNamespace(spendable=1_000),
+            )
+
+        def list_unspents(self, *_args):
+            return []
+
+        def send_btc(self, *_args):
+            raise RuntimeError("indexer connection reset")
+
+    class EmptyNoteWallet(Wallet):
+        def get_btc_balance(self, *_args):
+            return SimpleNamespace(
+                vanilla=SimpleNamespace(spendable=0),
+                colored=SimpleNamespace(spendable=0),
+            )
+
+    class Backend:
+        def __init__(self, wallet):
+            self._wallet = wallet
+            self._online = object()
+
+        def refresh(self):
+            return {}
+
+        def close(self):
+            pass
+
+    source = Backend(Wallet())
+    note = Backend(EmptyNoteWallet())
+    plan, _manifest = prepare_live_funding_btc_topup_plan(
+        sender,
+        vault_root=paths.root,
+        note_id="note-1",
+        clock=lambda: 1_100,
+        id_factory=lambda: "ambiguous-topup",
+        sender_backend_opener=lambda _settings: source,
+    )
+    with pytest.raises(LiveNoteError, match="ambiguous"):
+        execute_live_funding_btc_topup_plan(
+            sender,
+            vault_root=paths.root,
+            note_id="note-1",
+            plan_id=plan.plan_id,
+            confirmation_phrase=plan.confirmation_phrase,
+            clock=lambda: 1_200,
+            sender_backend_opener=lambda _settings: source,
+        )
+
+    result = reconcile_live_funding_btc_topup_prebroadcast_rejection(
+        sender,
+        vault_root=paths.root,
+        note_id="note-1",
+        clock=lambda: 1_300,
+        sender_backend_opener=lambda _settings: source,
+        note_backend_opener=lambda _settings: note,
+    )
+
+    assert result["status"] == "PRE_BROADCAST_REJECTED"
+    assert result["broadcast"] is False
+    assert not paths.funding_btc_topup_plan_file.exists()
+    archive = paths.funding_btc_topup_plan_file.parent / (
+        "funding-btc-topup-ambiguous-topup.json"
+    )
+    assert json.loads(archive.read_text())["status"] == "PRE_BROADCAST_REJECTED"
+    assert json.loads(paths.manifest_file.read_text())["state"] == "AWAITING_FUNDING"
+
+    fresh, manifest = prepare_live_funding_btc_topup_plan(
+        sender,
+        vault_root=paths.root,
+        note_id="note-1",
+        clock=lambda: 1_400,
+        id_factory=lambda: "fresh-topup",
+        sender_backend_opener=lambda _settings: source,
+    )
+    assert fresh.plan_id == "fresh-topup"
+    assert manifest["state"] == "BTC_TOPUP_PLANNED"
 
 
 def test_private_and_atomic_records_are_mode_0600(tmp_path):
@@ -542,7 +640,7 @@ def test_ambiguous_old_funding_reconciles_and_creates_separate_capacity_plan(
 
     assert plan.operation == "create-funding-source-colorable-utxo"
     assert plan.plan_id == "funding-capacity-1"
-    assert plan.utxo_size_sat == 8_000
+    assert plan.utxo_size_sat == 1_000
     assert manifest["state"] == "FUNDING_CAPACITY_PLANNED"
     assert json.loads(paths.plan_file.read_text())["status"] == (
         "PRE_BROADCAST_REJECTED"
@@ -1712,7 +1810,7 @@ def test_allocation_rejection_reconciles_and_prepares_separate_capacity_plan(tmp
     )
     assert capacity.plan_id == "capacity-plan-1"
     assert capacity.utxo_count == 1
-    assert capacity.utxo_size_sat == 8_000
+    assert capacity.utxo_size_sat == 1_000
     assert capacity.vanilla_spendable_before == 20_000
     assert manifest["state"] == "CAPACITY_PLANNED"
     assert json.loads(paths.redemption_capacity_plan_file.read_text())["status"] == (

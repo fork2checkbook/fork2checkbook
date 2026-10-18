@@ -68,6 +68,6 @@ def test_create_utxos_broadcasts_only_after_matching_plan(monkeypatch, tmp_path)
     monkeypatch.setattr("builtins.input", confirm)
     result = _create_utxos(backend, settings(tmp_path), num=1, size_sat=8_000)
 
-    assert wallet.calls == [("online", False, 1, 8_000, 2, False)]
+    assert wallet.calls == [("online", False, 1, 8_000, 1, False)]
     assert result["created_colorable_utxos"] == 1
     assert result["transactions"][0]["txid"] == "split"

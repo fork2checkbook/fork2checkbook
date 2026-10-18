@@ -156,7 +156,10 @@ Accepted bearer-note operator sequence:
 Planned T-Watch 2020 V1 bill-app port:
 [docs/TTGO-WATCH-APP-PLAN.md](docs/TTGO-WATCH-APP-PLAN.md).
 Canonical transaction and acceptance ledger:
-[docs/LIVE-EVIDENCE.md](docs/LIVE-EVIDENCE.md). Threat model:
+[docs/LIVE-EVIDENCE.md](docs/LIVE-EVIDENCE.md). Frozen chronological
+transaction artifact:
+[docs/evidence-artifacts/transacionEvicende.md](docs/evidence-artifacts/transacionEvicende.md).
+Threat model:
 [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md).
 Agent rules: [AGENTS.md](./AGENTS.md).
 
@@ -217,8 +220,9 @@ the primary “Prepare a $5 note” request into the guarded bearer-funding plan
 the deterministic dock now replaces manual note-faucet funding with a separate
 immutable Bitcoin top-up from the issuing wallet, while retaining distinct
 exact confirmations for the BTC and RGB broadcasts, settlement proof, and
-hardware-load gates. The live watch run exposed a reserve-sizing gap: the
-automatic 2,000-sat note reserve was insufficient after creating redemption
-capacity, so the operator added Mutinynet sats before the fresh redemption
-plan. Automating that larger reserve and the fixed adversarial QVAC intent
-evaluation remain open. WDK is not integrated.
+hardware-load gates. New plans use the shared minimum-sat policy: 1 sat/vB, a
+1,000-sat colorable output, and a 2,411-sat disposable-note reserve for the
+controlled one-input demo shape. The reserve covers the measured 213-vB
+capacity transaction plus the 1,000-sat witness and measured 198-vB RGB send;
+the earlier 2,000-sat live gap remains documented as historical evidence.
+Fixed adversarial QVAC intent evaluation remains open. WDK is not integrated.

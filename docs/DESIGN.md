@@ -43,10 +43,11 @@ device selection, not cryptographic device ownership authentication.
 1. The issuing dock creates fresh isolated note wallet N. If N lacks its
    configured Bitcoin fee reserve, the dock prepares a separate immutable
    `send_btc` top-up from the issuer wallet; one exact confirmation authorizes
-   that transaction, replacing the manual faucet step. The current 2,000-sat
-   default proved too small for both a capacity transaction and redemption in
-   one accepted run, so the operator runbook requires extra Mutinynet reserve
-   until sizing is automated.
+   that transaction, replacing the manual faucet step. New plans calculate the
+   minimum reserve for the controlled one-input shape: a 1,000-sat colorable
+   output, its measured 213-vB capacity fee, a 1,000-sat witness, and the
+   measured 198-vB RGB-send fee. At the shared 1 sat/vB default this is exactly
+   2,411 sats; a higher configured fee rate scales both fee components.
 2. After the top-up confirms, the dock supersedes the stale RGB plan. A fresh
    exact confirmation funds N with exactly 5 USDT through a transport-free
    witness invoice.

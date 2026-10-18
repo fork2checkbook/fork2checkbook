@@ -44,12 +44,16 @@ from .note_spike import (
     NOTE_AMOUNT_BASE_UNITS,
     NOTE_DENOMINATION_CENTS,
 )
+from .sat_policy import (
+    MIN_COLORABLE_UTXO_SAT,
+    minimum_capacity_fee_sat,
+    minimum_note_vanilla_sat,
+    minimum_redemption_vanilla_sat,
+    minimum_rgb_send_fee_sat,
+)
 
 
 LIVE_NOTE_VERSION = 1
-MEASURED_RGB_SEND_FEE_SAT = 395
-MEASURED_REDEMPTION_MINIMUM_SAT = 1_000 + MEASURED_RGB_SEND_FEE_SAT
-RECOMMENDED_REDEMPTION_VANILLA_SAT = 2_000
 DEFAULT_VAULT_KEY_ID = "local-demo-vault-v1"
 
 
@@ -740,6 +744,15 @@ def _finish_live_funding_plan(
     if source_balance < amount_base_units:
         raise LiveNoteError("funding dock wallet lacks the exact 5 USDT note amount")
 
+    measured_send_fee_sat = minimum_rgb_send_fee_sat(sender.fee_rate)
+    measured_redemption_minimum_sat = minimum_redemption_vanilla_sat(
+        sender.witness_amount_sat,
+        sender.fee_rate,
+    )
+    recommended_note_vanilla_sat = minimum_note_vanilla_sat(
+        sender.witness_amount_sat,
+        sender.fee_rate,
+    )
     plan = LiveFundingPlan(
         version=LIVE_NOTE_VERSION,
         plan_id=plan_id,
@@ -766,9 +779,9 @@ def _finish_live_funding_plan(
         note_btc_address=str(note_btc["address"]),
         note_vanilla_spendable_before=int(note_btc["vanilla"]["spendable"]),
         note_colored_spendable_before=int(note_btc["colored"]["spendable"]),
-        measured_prior_send_fee_sat=MEASURED_RGB_SEND_FEE_SAT,
-        measured_redemption_minimum_sat=MEASURED_REDEMPTION_MINIMUM_SAT,
-        recommended_redemption_vanilla_sat=RECOMMENDED_REDEMPTION_VANILLA_SAT,
+        measured_prior_send_fee_sat=measured_send_fee_sat,
+        measured_redemption_minimum_sat=measured_redemption_minimum_sat,
+        recommended_redemption_vanilla_sat=recommended_note_vanilla_sat,
     )
     if plan.expiration_timestamp <= planned_at:
         raise LiveNoteError("prepared funding plan is already expired")
@@ -1371,7 +1384,11 @@ def prepare_live_redemption_plan(
         note_backend.close()
     if source_balance != capsule.amount_base_units:
         raise LiveNoteError("note wallet no longer holds the exact bearer amount")
-    if vanilla_spendable < RECOMMENDED_REDEMPTION_VANILLA_SAT:
+    redemption_minimum_sat = minimum_redemption_vanilla_sat(
+        destination.witness_amount_sat,
+        destination.fee_rate,
+    )
+    if vanilla_spendable < redemption_minimum_sat:
         raise LiveNoteError("note wallet BTC preflight is no longer ready")
 
     plan = LiveRedemptionPlan(
@@ -1554,7 +1571,11 @@ def execute_live_redemption_plan(
                 "note balance changed; do not consume this redemption plan"
             )
         btc = note_backend._wallet.get_btc_balance(None, True)
-        if int(getattr(btc.vanilla, "spendable")) < RECOMMENDED_REDEMPTION_VANILLA_SAT:
+        redemption_minimum_sat = minimum_redemption_vanilla_sat(
+            int(plan["witness_amount_sat"]),
+            int(plan["fee_rate_sat_vb"]),
+        )
+        if int(getattr(btc.vanilla, "spendable")) < redemption_minimum_sat:
             raise LiveNoteError("note wallet BTC preflight is no longer ready")
         now = int(clock())
         if int(plan.get("expiration_timestamp", 0)) <= now:
@@ -2482,6 +2503,109 @@ def refresh_live_funding_btc_topup(
     }
 
 
+def reconcile_live_funding_btc_topup_prebroadcast_rejection(
+    sender: RgbSettings,
+    *,
+    vault_root: Path,
+    note_id: str,
+    clock: Callable[[], float] = time.time,
+    sender_backend_opener: Callable[[RgbSettings], RgbLibBackend] = RgbLibBackend.open,
+    note_backend_opener: Callable[[RgbSettings], RgbLibBackend] = RgbLibBackend.open,
+) -> dict[str, object]:
+    """Prove an ambiguous note top-up left both wallets unchanged.
+
+    ``send_btc`` may surface an indexer transport error before returning a txid.
+    The confirmation is already consumed, so recovery must never retry that
+    plan.  A fresh plan is allowed only when the issuing wallet still has the
+    exact pre-send inventory and the disposable note wallet has no Bitcoin
+    inventory at all.
+    """
+
+    _validate_sender(sender)
+    paths = LiveNotePaths.create(vault_root, note_id)
+    plan = _read_json(paths.funding_btc_topup_plan_file)
+    _btc_topup_plan_from_payload(plan)
+    manifest = _read_json(paths.manifest_file)
+    if (
+        plan.get("status") != "AMBIGUOUS"
+        or manifest.get("state") != "BTC_TOPUP_AMBIGUOUS"
+        or plan.get("broadcast")
+    ):
+        raise LiveNoteError(
+            "ambiguous note BTC top-up is not ready for pre-broadcast reconciliation"
+        )
+
+    sender_backend = sender_backend_opener(sender)
+    try:
+        sender_backend.refresh()
+        sender_capacity = _capacity_snapshot(sender_backend)
+    finally:
+        sender_backend.close()
+    if (
+        sender_capacity["vanilla_spendable"]
+        != int(plan["source_vanilla_spendable_before"])
+        or sender_capacity["colored_spendable"]
+        != int(plan["source_colored_spendable_before"])
+    ):
+        raise LiveNoteError(
+            "issuing wallet inventory changed; the ambiguous top-up cannot be retried"
+        )
+
+    note_settings = _note_settings(
+        sender,
+        paths,
+        fingerprint=str(manifest["master_fingerprint"]),
+    )
+    note_backend = note_backend_opener(note_settings)
+    try:
+        note_backend.refresh()
+        note_capacity = _capacity_snapshot(note_backend)
+    finally:
+        note_backend.close()
+    if any(note_capacity.values()):
+        raise LiveNoteError(
+            "disposable note Bitcoin inventory changed; the ambiguous top-up "
+            "cannot be retried"
+        )
+
+    reconciled_at = int(clock())
+    previous_id = str(plan["plan_id"])
+    archive = (
+        paths.funding_btc_topup_plan_file.parent
+        / f"funding-btc-topup-{previous_id}.json"
+    )
+    if archive.exists():
+        raise LiveNoteError("reconciled note BTC top-up archive already exists")
+    os.replace(paths.funding_btc_topup_plan_file, archive)
+    plan.update(
+        {
+            "status": "PRE_BROADCAST_REJECTED",
+            "reconciled_at": reconciled_at,
+        }
+    )
+    _atomic_json(archive, plan)
+    manifest.update(
+        {
+            "state": "AWAITING_FUNDING",
+            "reconciled_funding_btc_topup_plan_id": previous_id,
+            "reconciled_funding_btc_topup_plan_path": str(archive),
+        }
+    )
+    manifest.pop("funding_btc_topup_plan_id", None)
+    manifest.pop("funding_btc_topup_plan_path", None)
+    _atomic_json(paths.manifest_file, manifest)
+    return {
+        "phase": "live-note-btc-topup-prebroadcast-reconciled",
+        "note_id": note_id,
+        "plan_id": previous_id,
+        "status": "PRE_BROADCAST_REJECTED",
+        "broadcast": False,
+        "replayed": False,
+        "sender_capacity": sender_capacity,
+        "note_capacity": note_capacity,
+    }
+
+
 def reconcile_live_funding_prebroadcast_rejection(
     sender: RgbSettings,
     *,
@@ -2559,7 +2683,7 @@ def prepare_live_funding_capacity_plan(
     *,
     vault_root: Path,
     note_id: str,
-    utxo_size_sat: int = 8_000,
+    utxo_size_sat: int = MIN_COLORABLE_UTXO_SAT,
     plan_lifetime_seconds: int = 900,
     clock: Callable[[], float] = time.time,
     id_factory: Callable[[], str] = lambda: str(uuid.uuid4()),
@@ -2568,7 +2692,7 @@ def prepare_live_funding_capacity_plan(
     """Prepare a separately confirmed source-wallet RGB capacity transaction."""
 
     _validate_sender(sender)
-    if utxo_size_sat < 1_000 or plan_lifetime_seconds < 60:
+    if utxo_size_sat < MIN_COLORABLE_UTXO_SAT or plan_lifetime_seconds < 60:
         raise LiveNoteError("capacity UTXO size or plan lifetime is too small")
     now = int(clock())
     paths, funding = load_funding_plan(vault_root, note_id)
@@ -2627,7 +2751,8 @@ def prepare_live_funding_capacity_plan(
         raise LiveNoteError(
             "source wallet reports free colorable capacity; manual reconciliation is required"
         )
-    if capacity["vanilla_spendable"] < utxo_size_sat + 1_000:
+    capacity_minimum_sat = utxo_size_sat + minimum_capacity_fee_sat(sender.fee_rate)
+    if capacity["vanilla_spendable"] < capacity_minimum_sat:
         raise LiveNoteError("source wallet lacks enough vanilla sats for RGB capacity")
 
     planned_at = int(clock())
@@ -2949,7 +3074,7 @@ def prepare_live_redemption_capacity_plan(
     *,
     vault_root: Path,
     note_id: str,
-    utxo_size_sat: int = 8_000,
+    utxo_size_sat: int = MIN_COLORABLE_UTXO_SAT,
     plan_lifetime_seconds: int = 900,
     clock: Callable[[], float] = time.time,
     id_factory: Callable[[], str] = lambda: str(uuid.uuid4()),
@@ -2958,7 +3083,7 @@ def prepare_live_redemption_capacity_plan(
     """Prepare a separately confirmed Bitcoin transaction for RGB change capacity."""
 
     _validate_destination(destination)
-    if utxo_size_sat < 1_000 or plan_lifetime_seconds < 60:
+    if utxo_size_sat < MIN_COLORABLE_UTXO_SAT or plan_lifetime_seconds < 60:
         raise LiveNoteError("capacity UTXO size or plan lifetime is too small")
     paths, redemption = load_redemption_plan(vault_root, note_id)
     manifest = _read_json(paths.manifest_file)
@@ -2986,7 +3111,10 @@ def prepare_live_redemption_capacity_plan(
         backend.close()
     if capacity["free_colorable_utxo_count"] != 0:
         raise LiveNoteError("note already has free colorable capacity")
-    if capacity["vanilla_spendable"] < utxo_size_sat + 1_000:
+    capacity_minimum_sat = utxo_size_sat + minimum_capacity_fee_sat(
+        destination.fee_rate
+    )
+    if capacity["vanilla_spendable"] < capacity_minimum_sat:
         raise LiveNoteError("note lacks enough vanilla sats for RGB change capacity")
     planned_at = int(clock())
     plan = LiveCapacityPlan(

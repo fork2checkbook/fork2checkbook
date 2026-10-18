@@ -120,6 +120,19 @@ Build and host-side checks:
 .venv-platformio/bin/pio run -e ttgo-lora32-oled-test
 ```
 
+The second Waveshare watch has its own non-ambiguous production profile. It
+keeps the same GATT contract and hardware support, advertises as
+`RgbBill-Watch-2`, and reports identity `s2watch-2`:
+
+```bash
+.venv-platformio/bin/pio run -e waveshare-s3-bill-2
+.venv-platformio/bin/pio run -e waveshare-s3-bill-2 -t upload
+.venv-platformio/bin/pio device monitor -e waveshare-s3-bill-2
+```
+
+That profile is pinned to USB-JTAG serial `28:84:85:B5:09:14`; it must not be
+used to flash the original watch.
+
 The production image was physically flashed on 2026-10-18 to the verified
 ESP32-S3 at the stable USB by-id path above. Because the new fail-closed image
 never formats storage automatically, the first boot correctly reported an

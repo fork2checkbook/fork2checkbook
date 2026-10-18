@@ -21,12 +21,12 @@ the browser prepares a separate immutable Bitcoin top-up from the issuing dock
 wallet. Review and confirm it, wait for one Mutinynet confirmation, then ask
 **“Check my note”** to obtain a fresh RGB funding plan. No faucet address is
 shown in the normal browser flow, and one confirmation never authorizes both
-broadcasts. The current automatic 2,000-sat reserve is not sufficient in every
-path: the accepted watch run needed a colorable-capacity transaction and then
-an operator-added Mutinynet top-up before redemption. For the demo, pre-fund
-the disposable note with enough valueless test sats or verify the fresh plan's
-vanilla-sat inventory before confirming. Never reuse a consumed plan after
-adding capacity or sats. The commands below remain the auditable operator equivalent and
+broadcasts. New plans use 1 sat/vB and calculate the minimum reserve for the
+controlled one-input note shape: 1,000 sats for the colorable output, 213 sats
+for its measured capacity transaction, 1,000 sats for the witness, and 198
+sats for the measured RGB send, totaling 2,411 sats. Verify the fresh plan's
+inventory before confirming, and never reuse a consumed plan after adding
+capacity or sats. The commands below remain the auditable operator equivalent and
 are still required for the separately confirmed capacity fallback. Do not run
 the CLI and web server against the same Wallet A/B datadir at the same time.
 
@@ -148,7 +148,7 @@ operation, and only after explicit approval:
 In the web/QVAC flow, an `InsufficientAllocationSlots` rejection is not a
 reason to repeat that confirmation. Ask QVAC **“check my note”**. The dock must
 first prove that the RGB send remained pre-broadcast, then show a separate
-immutable confirmation for one 8,000-sat source-wallet colorable UTXO. After
+immutable confirmation for one 1,000-sat source-wallet colorable UTXO. After
 that Bitcoin transaction confirms, ask **“check my note”** again. The dock
 archives the rejected plan and presents a fresh RGB funding plan with a new
 confirmation phrase. Never reuse the consumed RGB confirmation.
@@ -251,10 +251,12 @@ confirm, and settle a separate capacity transaction:
 ```
 
 Before confirming that fresh redemption plan, inspect its recorded vanilla
-sat inventory. The accepted watch run demonstrated that a 2,000-sat initial
-reserve can leave only 691 sats after capacity creation, which is insufficient
-for the final send. Add only Mutinynet test sats if necessary, refresh, and
-prepare another fresh immutable plan; do not extend or reuse the earlier one.
+sat inventory. A new default plan begins with exactly 2,411 sats and, after the
+1,000-sat capacity output plus its measured 213-sat fee, retains the 1,198 sats
+required for the 1,000-sat witness and measured 198-sat RGB-send fee. If the
+transaction shape or relay fee changes, configure a higher fee rate, refresh,
+and prepare another fresh immutable plan; do not extend or reuse the earlier
+one.
 
 ## 6. Confirm once, import, and settle
 

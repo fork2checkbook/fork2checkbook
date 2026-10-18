@@ -31,6 +31,12 @@ def test_public_site_describes_the_verified_bearer_flow_honestly():
 def test_public_site_lists_every_block_verified_transaction():
     html = _read(SITE / "index.html")
     evidence = _read(PROJECT_ROOT / "docs" / "LIVE-EVIDENCE.md")
+    artifact = _read(
+        PROJECT_ROOT
+        / "docs"
+        / "evidence-artifacts"
+        / "transacionEvicende.md"
+    )
     transactions = {
         "9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4": "3514180",
         "8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f": "3514181",
@@ -56,8 +62,13 @@ def test_public_site_lists_every_block_verified_transaction():
     for txid, height in transactions.items():
         assert html.count(txid) == 2
         assert txid in evidence
+        assert txid in artifact
         assert f">{int(height):,}<" in html
         assert f"`{height}`" in evidence
+        assert f"[`{height}`]" in artifact
+
+    assert "Transactions checked: 16" in artifact
+    assert "16 confirmed, 0 unconfirmed, 0 missing" in artifact
 
 
 def test_public_site_lists_every_documentation_diagram():

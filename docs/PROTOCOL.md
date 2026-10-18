@@ -66,9 +66,12 @@ sats no longer asks the human to use a faucet: deterministic code prepares a
 separate `fund-note-bitcoin-reserve` plan that sends only the missing sats from
 the issuing dock wallet after exact confirmation. That confirmation cannot
 authorize the later RGB send. The separately confirmed Bitcoin capacity
-fallback stays in the operator runbook. The current 2,000-sat default reserve
-proved too small after one capacity transaction; the runbook therefore
-requires a pre-confirmation vanilla-sat check until reserve sizing is fixed.
+fallback stays in the operator runbook. New plans use the shared minimum-sat
+policy: a 1,000-sat colorable output and a calculated reserve covering the
+measured 213-vB capacity transaction, 1,000-sat witness, and measured 198-vB
+RGB send. This is 2,411 sats at the default 1 sat/vB and scales with any
+explicitly configured higher fee rate. The pre-confirmation inventory check
+remains fail-closed.
 
 The BLE hops are bearer-capability transfers, not RGB state transitions. A
 copied capsule is first-redemption-wins because the trusted vault controls N

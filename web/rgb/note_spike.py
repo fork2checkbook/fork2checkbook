@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Protocol
 
+from .sat_policy import MIN_FEE_RATE_SAT_VB
+
 
 NETWORK = "mutinynet"
 NOTE_AMOUNT_BASE_UNITS = 5_000_000
@@ -415,7 +417,7 @@ class DisposableNoteSpike:
             asset_id=self.asset_id,
             amount=NOTE_AMOUNT_BASE_UNITS,
             denomination_cents=NOTE_DENOMINATION_CENTS,
-            fee_rate_sat_vb=2,
+            fee_rate_sat_vb=MIN_FEE_RATE_SAT_VB,
             expiration_timestamp=min(
                 invoice.expiration_timestamp,
                 int(self.clock()) + 900,

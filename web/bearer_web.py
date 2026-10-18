@@ -28,6 +28,7 @@ from web.rgb.note_live import (
     prepare_live_bearer_capsule,
     prepare_live_redemption_plan,
     recover_live_redemption,
+    reconcile_live_funding_btc_topup_prebroadcast_rejection,
     redacted_plan,
     refresh_live_funding,
     refresh_live_funding_btc_topup,
@@ -270,6 +271,9 @@ class BearerWebService:
             if not bool(topup.get("confirmed")):
                 return topup
             return self.renew_funding(note_id)
+        if state == "BTC_TOPUP_AMBIGUOUS":
+            self.reconcile_btc_topup(note_id)
+            return self.prepare_btc_topup(note_id)
         if state in {"FUNDING_IMPORTED", "ACTIVE"}:
             return self.refresh_funding(note_id)
         if state in {
@@ -377,6 +381,27 @@ class BearerWebService:
                 str(exc),
                 retryable=True,
                 broadcast=True,
+                recovery_action="inspect-note-funding",
+            ) from exc
+
+    def reconcile_btc_topup(self, note_id: str) -> dict[str, object]:
+        """Prove an ambiguous top-up stayed pre-broadcast before replanning."""
+
+        def reconcile(settings: RgbSettings, opener: object) -> dict[str, object]:
+            return reconcile_live_funding_btc_topup_prebroadcast_rejection(
+                settings,
+                vault_root=self.vault_root,
+                note_id=note_id,
+                sender_backend_opener=opener,  # type: ignore[arg-type]
+            )
+
+        try:
+            return self.wallet.with_borrowed_backend(reconcile)
+        except LiveNoteError as exc:
+            raise BearerWebError(
+                str(exc),
+                retryable=False,
+                broadcast=None,
                 recovery_action="inspect-note-funding",
             ) from exc
 

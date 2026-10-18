@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Mapping
 from urllib.parse import urlparse
 
+from .sat_policy import MIN_FEE_RATE_SAT_VB, MIN_WITNESS_AMOUNT_SAT
+
 
 class SettingsError(ValueError):
     """The wallet process configuration is unsafe or incomplete."""
@@ -67,8 +69,8 @@ class RgbSettings:
     master_fingerprint: str | None = None
     mnemonic_file: Path | None = None
     min_confirmations: int = 1
-    fee_rate: int = 2
-    witness_amount_sat: int = 1000
+    fee_rate: int = MIN_FEE_RATE_SAT_VB
+    witness_amount_sat: int = MIN_WITNESS_AMOUNT_SAT
     max_consignment_bytes: int = 640 * 1024
 
     @classmethod
@@ -115,8 +117,10 @@ class RgbSettings:
 
         try:
             min_confirmations = int(env.get("RGB_MIN_CONFIRMATIONS", "1"))
-            fee_rate = int(env.get("RGB_FEE_RATE", "2"))
-            witness_amount_sat = int(env.get("RGB_WITNESS_AMOUNT_SAT", "1000"))
+            fee_rate = int(env.get("RGB_FEE_RATE", str(MIN_FEE_RATE_SAT_VB)))
+            witness_amount_sat = int(
+                env.get("RGB_WITNESS_AMOUNT_SAT", str(MIN_WITNESS_AMOUNT_SAT))
+            )
             max_consignment_bytes = int(
                 env.get("RGB_MAX_CONSIGNMENT_BYTES", str(640 * 1024))
             )
@@ -124,10 +128,15 @@ class RgbSettings:
             raise SettingsError("RGB numeric settings must be integers") from exc
         if min_confirmations < 1:
             raise SettingsError("RGB_MIN_CONFIRMATIONS must be at least 1")
-        if fee_rate < 1:
-            raise SettingsError("RGB_FEE_RATE must be at least 1 sat/vB")
-        if witness_amount_sat < 1:
-            raise SettingsError("RGB_WITNESS_AMOUNT_SAT must be positive")
+        if fee_rate < MIN_FEE_RATE_SAT_VB:
+            raise SettingsError(
+                f"RGB_FEE_RATE must be at least {MIN_FEE_RATE_SAT_VB} sat/vB"
+            )
+        if witness_amount_sat < MIN_WITNESS_AMOUNT_SAT:
+            raise SettingsError(
+                "RGB_WITNESS_AMOUNT_SAT must be at least "
+                f"{MIN_WITNESS_AMOUNT_SAT} sats"
+            )
         if max_consignment_bytes < 1:
             raise SettingsError("RGB_MAX_CONSIGNMENT_BYTES must be positive")
 

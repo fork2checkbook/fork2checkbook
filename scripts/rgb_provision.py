@@ -87,7 +87,7 @@ def provision(role: str) -> tuple[Path, Path, Path]:
                 "RGB_BOOTSTRAP_PROXY=rpcs://proxy.kaleidoswap.com/json-rpc",
                 f"RGB_OOB_INBOX_{role}={ROOT / '.rgb-oob' / f'bill-{slug}'}",
                 "RGB_MIN_CONFIRMATIONS=1",
-                "RGB_FEE_RATE=2",
+                "RGB_FEE_RATE=1",
                 "RGB_WITNESS_AMOUNT_SAT=1000",
                 "RGB_MAX_CONSIGNMENT_BYTES=655360",
                 "RGB_ASSET_ID=",

@@ -394,8 +394,10 @@ def test_waveshare_production_reuses_tap_contract_and_touch_input():
     assert "TapGatt" not in production.split("lib_ignore =", 1)[1].split(
         "\n", 1
     )[0]
-    assert 'BLE_DEVICE_NAME[] = "RgbBill-Watch"' in config
-    assert 'BLE_IDENTITY[] = "bill-waveshare-s3-v1"' in config
+    assert '#define FORK2CHECKBOOK_BLE_DEVICE_NAME "RgbBill-Watch"' in config
+    assert '#define FORK2CHECKBOOK_BLE_IDENTITY "bill-waveshare-s3-v1"' in config
+    assert "BLE_DEVICE_NAME[] = FORK2CHECKBOOK_BLE_DEVICE_NAME" in config
+    assert "BLE_IDENTITY[] = FORK2CHECKBOOK_BLE_IDENTITY" in config
     assert "DockGatt dockGatt" in source
     assert "#include <TapGatt.h>" in source
     assert "TapGatt tapGatt" in source
@@ -408,6 +410,14 @@ def test_waveshare_production_reuses_tap_contract_and_touch_input():
     assert "!touchInterruptPending && !gate_.contactActive()" in touch_source
     assert "gate_.update(fingers)" in touch_source
     assert "dockGatt.begin(storageMounted)" in source
+
+    second_watch = platformio.split("[env:waveshare-s3-bill-2]", 1)[1].split(
+        "[env:native]", 1
+    )[0]
+    assert "extends = env:waveshare-s3-bill" in second_watch
+    assert "28:84:85:B5:09:14-if00" in second_watch
+    assert 'FORK2CHECKBOOK_BLE_DEVICE_NAME=\\"RgbBill-Watch-2\\"' in second_watch
+    assert 'FORK2CHECKBOOK_BLE_IDENTITY=\\"s2watch-2\\"' in second_watch
     assert "ArtifactInventory::RECOVERY_BLOCKED" in source
     assert "if (cents_ > 0)" in display
     assert 'centeredText("EMPTY"' in display
