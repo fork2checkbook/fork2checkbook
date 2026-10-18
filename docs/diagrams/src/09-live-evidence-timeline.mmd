@@ -4,14 +4,15 @@ flowchart LR
     classDef bitcoin fill:#f1f5f9,stroke:#64748b,color:#1e293b,stroke-width:2px
     classDef final fill:#fef3c7,stroke:#d97706,color:#4a2b05,stroke-width:2px
 
-    a["Wallet A | 5 USDT funding plan"]:::rgb
-    ftx["Funding tx b325…3963 | block 3508184"]:::bitcoin
+    a["Wallet B | 5 USDT funding plan"]:::rgb
+    reserve["Fee reserve tx 9d26…aac4"]:::bitcoin
+    ftx["Funding tx 8bfa…d46f | 5,000,000 units"]:::bitcoin
     n["Note N ACTIVE | 5,000,000 settled"]:::rgb
-    cap["Capsule 603 bytes | SHA a387…5144"]:::physical
-    relay["WEMOS to TTGO | session 3de6f5e7 | 4 frames | reboot restore"]:::physical
-    capacity["Capacity tx 089a…34bb | free 8,000-sat colorable UTXO"]:::bitcoin
-    rtx["Redemption tx dfe1…27bf | block 3508531"]:::bitcoin
-    b["Wallet B | exact 5,000,000 assignment | 50 to 55 USDT"]:::rgb
+    cap["Capsule 603 bytes | SHA 1598…310c"]:::physical
+    relay["TTGO to watch to WEMOS | session 220902c8 | 4 frames per send"]:::physical
+    capacity["Capacity tx 8301…2b02 | free 1,000-sat colorable UTXO"]:::bitcoin
+    rtx["Redemption tx 65b4…c6d5 | plan 1810…8a49"]:::bitcoin
+    b["Wallet A | exact 5,000,000 assignment | 50 to 55 USDT"]:::rgb
     done["REDEEMED | claim SPENT | refresh replay no send"]:::final
 
-    a --> ftx --> n --> cap --> relay --> capacity --> rtx --> b --> done
+    a --> reserve --> ftx --> n --> cap --> relay --> capacity --> rtx --> b --> done

@@ -2,6 +2,7 @@
 
 import asyncio
 import re
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -314,6 +315,79 @@ def test_receive_chunk_file_accepts_bearer_held_inventory(monkeypatch, tmp_path)
     assert actual_session == session_id
     assert size == len(payload)
     assert output.read_bytes() == payload
+
+
+def test_synthetic_bearer_fixture_dock_write_read_loopback(monkeypatch):
+    device, _advertisement = _sighting()
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "test"
+        / "fixtures"
+        / "chunk-smoke.payload"
+    )
+    payload = fixture.read_bytes()
+    writes = []
+    session_id = 0x77862B2E
+
+    async def fake_find_target(_timeout, _address=None):
+        return device
+
+    class FakeClient:
+        def __init__(self, selected_device, timeout):
+            assert selected_device is device
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, traceback):
+            return False
+
+        async def write_gatt_char(self, uuid, value, response):
+            writes.append((uuid, bytes(value), response))
+
+    class FixtureLoopbackTransport:
+        def __init__(self, client, chunk_in, chunk_out, timeout):
+            assert isinstance(client, FakeClient)
+
+        async def start(self):
+            return None
+
+        async def send(self, kind, actual, *, payload_bytes):
+            assert kind is bill_dock.FrameKind.BEARER_NOTE
+            assert actual == payload
+            assert payload_bytes == bill_dock.DEFAULT_PAYLOAD_BYTES
+            return session_id
+
+        async def receive(self, *, expected_kind, expected_session_id):
+            assert expected_kind is bill_dock.FrameKind.BEARER_NOTE
+            assert expected_session_id == session_id
+            return expected_kind, expected_session_id, payload
+
+        async def stop(self):
+            return None
+
+    monkeypatch.setattr(bill_dock, "_find_target", fake_find_target)
+    monkeypatch.setattr(bill_dock, "BleakClient", FakeClient)
+    monkeypatch.setattr(bill_dock, "ChunkTransport", FixtureLoopbackTransport)
+
+    actual_session, echoed = asyncio.run(
+        bill_dock.send_chunk_file(
+            0.1,
+            device.address,
+            bill_dock.FrameKind.BEARER_NOTE,
+            fixture,
+            echo=True,
+            denomination_cents=500,
+        )
+    )
+
+    assert len(payload) == 520
+    assert actual_session == session_id
+    assert echoed == payload
+    assert writes == [
+        (bill_dock.CMD, b"artifact:prepare:4:500", True),
+        (bill_dock.CMD, bill_dock.CHUNK_ECHO_COMMAND, True),
+    ]
 
 
 def test_artifact_inventory_rejects_nonempty_empty_state():

@@ -16,6 +16,12 @@ including TTGO restart restoration. The source SHA-256 was
 the later live 603-byte capsule crossed WEMOS → TTGO, survived restart, and was
 extracted with exact SHA-256
 `a38775213ac972dae871906e37b09750e25e4fe71a2d28a9bd4bd3fca4615144`.
+A fresh live 603-byte capsule later crossed TTGO → Waveshare watch → WEMOS as
+session `0x220902c8` and was extracted byte-for-byte with SHA-256
+`159805d2dea99c3dd2601e3dcf07d0dfd6b4c6a400df1970f8b405710d5f310c`.
+That note then redeemed into the previously unknown Wallet A with RGB txid
+`65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5`;
+Wallet A settled from 50 to 55 USDT and the note closed `REDEEMED` / `SPENT`.
 `include/config.h` and `docs/devs/gatt-contract.json` stay in lockstep with
 this document.
 
@@ -60,7 +66,9 @@ sats no longer asks the human to use a faucet: deterministic code prepares a
 separate `fund-note-bitcoin-reserve` plan that sends only the missing sats from
 the issuing dock wallet after exact confirmation. That confirmation cannot
 authorize the later RGB send. The separately confirmed Bitcoin capacity
-fallback stays in the operator runbook.
+fallback stays in the operator runbook. The current 2,000-sat default reserve
+proved too small after one capacity transaction; the runbook therefore
+requires a pre-confirmation vanilla-sat check until reserve sizing is fixed.
 
 The BLE hops are bearer-capability transfers, not RGB state transitions. A
 copied capsule is first-redemption-wins because the trusted vault controls N
@@ -138,16 +146,18 @@ On every Connect, Send, or Receive action, the dock reads `IDENTITY`, `STATUS`,
 and direction select CHUNK_IN versus CHUNK_OUT; human wording never selects a
 blind read.
 
-### Planned touchscreen input profile
+### Touchscreen input profile
 
-The planned LilyGO T-Watch 2020 V1 app changes only the local input and display
-adapter. Selecting **Receive note** on the watch is the same rising-edge,
+The active Waveshare ESP32-S3-Touch-AMOLED-2.06 profile changes only the local
+input and display adapter. One FT3168 tap-and-release is the same rising-edge,
 one-shot event as pressing GPIO12 on the accepted boards: it arms one
-15-second receiver window and does not need to be held. A second selection
-cancels. All GATT UUIDs, inventory bytes, artifact kinds, chunk frames, RSSI
-qualification, ACK semantics, persistence rules, and recovery behavior remain
-byte-for-byte compatible. Touch navigation is never a spend confirmation;
-exact RGB spend confirmation remains on the laptop dock.
+15-second receiver window and does not need to be held. A second distinct tap
+cancels. The controller is sampled after its GPIO38 interrupt rather than
+continuously polling the shared I2C bus. All GATT UUIDs, inventory bytes,
+artifact kinds, chunk frames, RSSI qualification, ACK semantics, persistence
+rules, and recovery behavior remain byte-for-byte compatible. Touch navigation
+is never a spend confirmation; exact RGB spend confirmation remains on the
+laptop dock. A LilyGO T-Watch port may reuse the same logical adapter later.
 
 ## Dock service (`7c3e9a10-4b1e-4c8f-9d2a-00b111d0c001`)
 

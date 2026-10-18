@@ -8,6 +8,7 @@
 #include <TapProtocol.h>
 #include <cstring>
 
+#include <ArtifactRecoveryPolicy.h>
 #include "config.h"
 
 namespace {
@@ -75,19 +76,26 @@ DockGatt::DockGatt()
       chunkCallbacks_(*this),
       inboundSession_(MAX_TRANSFER_BYTES) {}
 
-void DockGatt::begin() {
+void DockGatt::begin(bool storageMounted) {
   chunkMutex_ = xSemaphoreCreateMutex();
-  storageReady_ = SPIFFS.begin(true);
+  filesystemMounted_ = storageMounted;
+  storageReady_ = filesystemMounted_;
   if (!storageReady_) {
-    Serial.println("bill: SPIFFS unavailable; chunk transfers disabled");
+    storageBlockedByOrphan_ = true;
+    Serial.println(
+        "bill: SPIFFS unavailable; chunk transfers recovery-blocked");
   }
-  if (storageReady_ && SPIFFS.exists(CHUNK_READY_PATH) &&
-      SPIFFS.exists(CHUNK_META_PATH)) {
+
+  const bool hasPart = storageReady_ && SPIFFS.exists(CHUNK_PART_PATH);
+  const bool hasReady = storageReady_ && SPIFFS.exists(CHUNK_READY_PATH);
+  const bool hasMetadata = storageReady_ && SPIFFS.exists(CHUNK_META_PATH);
+  bool restored = false;
+  rgbbill::tap::Metadata metadata;
+  if (storageReady_ && !hasPart && hasReady && hasMetadata) {
     File metadataFile = SPIFFS.open(CHUNK_META_PATH, FILE_READ);
     File artifactFile = SPIFFS.open(CHUNK_READY_PATH, FILE_READ);
     uint8_t encoded[rgbbill::tap::METADATA_SIZE] = {};
-    rgbbill::tap::Metadata metadata;
-    const bool restored = metadataFile && artifactFile &&
+    restored = metadataFile && artifactFile &&
         metadataFile.read(encoded, sizeof(encoded)) == sizeof(encoded) &&
         rgbbill::tap::decodeMetadata(encoded, sizeof(encoded), metadata) &&
         metadata.state == rgbbill::tap::ReadyState::kReady &&
@@ -99,25 +107,28 @@ void DockGatt::begin() {
              static_cast<uint8_t>(rgbbill::chunk::Kind::kBearerNote));
     if (metadataFile) metadataFile.close();
     if (artifactFile) artifactFile.close();
-    if (restored) {
+  }
+
+  if (storageReady_) {
+    const auto bootState = rgbbill::storage::classifyArtifactBootState(
+        hasPart, hasReady, hasMetadata, restored);
+    if (bootState == rgbbill::storage::ArtifactBootState::kReady) {
       inboundReady_ = true;
       inboundKind_ = metadata.kind;
       inboundSessionId_ = metadata.sessionId;
       inboundSize_ = metadata.size;
       inboundDenominationCents_ = metadata.denominationCents;
-      Serial.printf("bill: restored dock artifact kind=%u session=%08lx bytes=%u\n",
-                    inboundKind_,
-                    static_cast<unsigned long>(inboundSessionId_),
-                    static_cast<unsigned>(inboundSize_));
-    } else {
-      SPIFFS.remove(CHUNK_META_PATH);
+      Serial.printf(
+          "bill: restored dock artifact kind=%u session=%08lx bytes=%u\n",
+          inboundKind_, static_cast<unsigned long>(inboundSessionId_),
+          static_cast<unsigned>(inboundSize_));
+    } else if (bootState ==
+               rgbbill::storage::ArtifactBootState::kRecoveryBlocked) {
       storageBlockedByOrphan_ = true;
       storageReady_ = false;
       Serial.println(
-          "bill: orphaned dock artifact blocks transfers; use chunk:discard explicitly");
+          "bill: incomplete or inconsistent dock artifact blocks transfers; use chunk:discard explicitly");
     }
-  } else if (storageReady_ && SPIFFS.exists(CHUNK_META_PATH)) {
-    SPIFFS.remove(CHUNK_META_PATH);
   }
 
   BLEDevice::init(BLE_DEVICE_NAME);
@@ -168,6 +179,17 @@ void DockGatt::begin() {
   advertising->setScanResponse(true);
   advertising->start();
   Serial.println("bill: dock GATT advertising");
+}
+
+bool DockGatt::storageAvailable() const {
+  if (chunkMutex_ == nullptr ||
+      xSemaphoreTake(chunkMutex_, portMAX_DELAY) != pdTRUE) {
+    return false;
+  }
+  const bool available = filesystemMounted_ && storageReady_ &&
+                         !storageBlockedByOrphan_;
+  xSemaphoreGive(chunkMutex_);
+  return available;
 }
 
 void DockGatt::poll() {
@@ -376,8 +398,8 @@ void DockGatt::handleCommand(const std::string& command) {
       }
       resetInboundLocked(true);
       if (storageBlockedByOrphan_) {
-        storageBlockedByOrphan_ = false;
-        storageReady_ = true;
+        storageReady_ = filesystemMounted_;
+        storageBlockedByOrphan_ = !filesystemMounted_;
       }
       echoNextTransfer_ = false;
       preparedKind_ = 0;

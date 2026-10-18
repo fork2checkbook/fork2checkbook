@@ -17,6 +17,7 @@ constexpr uint32_t ACK_TIMEOUT_MS = 1000;
 constexpr uint8_t MAX_ACK_RETRIES = 3;
 constexpr char OUTBOUND_META_PATH[] = "/tap-out.meta";
 constexpr char INBOUND_META_PATH[] = "/tap-in.meta";
+constexpr char INBOUND_PART_PATH[] = "/tap-in.part";
 
 uint32_t readLe32(const uint8_t* input) {
   return static_cast<uint32_t>(input[0]) |
@@ -58,11 +59,15 @@ TapGatt::TapGatt()
       clientCallbacks_(*this),
       receiverSession_(MAX_TRANSFER_BYTES) {}
 
-void TapGatt::begin(BLEServer* server) {
+void TapGatt::begin(BLEServer* server, bool storageMounted) {
   server_ = server;
   mutex_ = xSemaphoreCreateMutex();
-  storageReady_ = SPIFFS.begin(false);
+  filesystemMounted_ = storageMounted;
+  storageReady_ = filesystemMounted_;
+  storageBlockedByOrphan_ = !filesystemMounted_;
+#if !defined(RGB_BILL_WAVESHARE_S3)
   pinMode(TAP_BUTTON_PIN, TAP_BUTTON_MODE);
+#endif
   if (server_ == nullptr || mutex_ == nullptr) {
     Serial.println("tap: initialization failed");
     return;
@@ -99,12 +104,18 @@ void TapGatt::begin(BLEServer* server) {
       Serial.println(
           "tap: bearer promotion recovery required; use chunk:discard explicitly");
     }
-    if ((SPIFFS.exists(OUTBOUND_PATH) && !outboundReady_) ||
-        (SPIFFS.exists(INBOUND_PATH) && !inboundReady_)) {
+    if (storageReady_ &&
+        (SPIFFS.exists(INBOUND_PART_PATH) ||
+         ((SPIFFS.exists(OUTBOUND_PATH) ||
+           SPIFFS.exists(OUTBOUND_META_PATH)) &&
+          !outboundReady_) ||
+         ((SPIFFS.exists(INBOUND_PATH) ||
+           SPIFFS.exists(INBOUND_META_PATH)) &&
+          !inboundReady_))) {
       storageBlockedByOrphan_ = true;
       storageReady_ = false;
       Serial.println(
-          "tap: orphaned artifact blocks transfers; use chunk:discard explicitly");
+          "tap: incomplete or inconsistent artifact blocks transfers; use chunk:discard explicitly");
     }
     updateMetadataLocked();
     xSemaphoreGive(mutex_);
@@ -117,10 +128,22 @@ void TapGatt::begin(BLEServer* server) {
   scan->setActiveScan(true);
   scan->setInterval(100);
   scan->setWindow(80);
+#if defined(RGB_BILL_WAVESHARE_S3)
+  Serial.printf(
+      "tap: GATT ready; tap screen once near sender (RSSI >= %d dBm)\n",
+      rgbbill::tap::DEFAULT_RSSI_THRESHOLD_DBM);
+#else
   Serial.printf(
       "tap: GATT ready; press GPIO%u %s once near sender (RSSI >= %d dBm)\n",
       TAP_BUTTON_PIN, TAP_INPUT_NAME,
       rgbbill::tap::DEFAULT_RSSI_THRESHOLD_DBM);
+#endif
+}
+
+void TapGatt::requestReceiverToggle() {
+  portENTER_CRITICAL(&inputMux_);
+  inputEdgePending_ = true;
+  portEXIT_CRITICAL(&inputMux_);
 }
 
 bool TapGatt::canStageOutbound() const {
@@ -188,9 +211,15 @@ void TapGatt::poll() {
   }
 
   const uint32_t now = millis();
+#if !defined(RGB_BILL_WAVESHARE_S3)
   gate_.updateButton(digitalRead(TAP_BUTTON_PIN) == TAP_BUTTON_ACTIVE_LEVEL,
                      now);
-  const bool pressedEdge = gate_.takePressedEdge();
+#endif
+  bool pressedEdge = gate_.takePressedEdge();
+  portENTER_CRITICAL(&inputMux_);
+  pressedEdge = pressedEdge || inputEdgePending_;
+  inputEdgePending_ = false;
+  portEXIT_CRITICAL(&inputMux_);
   bool startScan = false;
   bool stopScan = false;
   bool disconnectReceiver = false;
@@ -525,8 +554,8 @@ void TapGatt::handleReceiverChunk(uint8_t* data, size_t length) {
     if (result == rgbbill::chunk::Result::kOk) {
       if (frame.sequence == 0) {
         SPIFFS.remove(INBOUND_PATH);
-        SPIFFS.remove("/tap-in.part");
-        receiverFile_ = SPIFFS.open("/tap-in.part", FILE_WRITE);
+        SPIFFS.remove(INBOUND_PART_PATH);
+        receiverFile_ = SPIFFS.open(INBOUND_PART_PATH, FILE_WRITE);
       }
       if (!receiverFile_ ||
           receiverFile_.write(frame.payload, frame.payloadLength) !=
@@ -539,7 +568,7 @@ void TapGatt::handleReceiverChunk(uint8_t* data, size_t length) {
           receiverFile_.flush();
           receiverFile_.close();
           if (receiverSession_.bytesReceived() != expectedMetadata_.size ||
-              !SPIFFS.rename("/tap-in.part", INBOUND_PATH)) {
+              !SPIFFS.rename(INBOUND_PART_PATH, INBOUND_PATH)) {
             result = rgbbill::chunk::Result::kStorageFailure;
             resetReceiverLocked(false);
           } else {
@@ -746,7 +775,7 @@ void TapGatt::resetReceiverLocked(bool removeReady) {
   if (receiverFile_) {
     receiverFile_.close();
   }
-  SPIFFS.remove("/tap-in.part");
+  SPIFFS.remove(INBOUND_PART_PATH);
   receiverSession_.reset();
   receiverLastFrameCrc_ = 0;
   receiverDisconnectAfterAck_ = false;
@@ -840,7 +869,6 @@ bool TapGatt::restoreArtifactMetadataLocked(
     uint32_t& sessionId, size_t& size, uint32_t& denominationCents) {
   if (!storageReady_ || !SPIFFS.exists(metadataPath) ||
       !SPIFFS.exists(artifactPath)) {
-    if (SPIFFS.exists(metadataPath)) SPIFFS.remove(metadataPath);
     return false;
   }
   File metadataFile = SPIFFS.open(metadataPath, FILE_READ);
@@ -855,7 +883,6 @@ bool TapGatt::restoreArtifactMetadataLocked(
   if (metadataFile) metadataFile.close();
   if (artifactFile) artifactFile.close();
   if (!valid) {
-    SPIFFS.remove(metadataPath);
     return false;
   }
   kind = metadata.kind;
@@ -973,8 +1000,8 @@ void TapGatt::discardStaged() {
   outboundDenominationCents_ = 0;
   resetReceiverLocked(true);
   if (storageBlockedByOrphan_) {
-    storageBlockedByOrphan_ = false;
-    storageReady_ = true;
+    storageReady_ = filesystemMounted_;
+    storageBlockedByOrphan_ = !filesystemMounted_;
   }
   updateMetadataLocked();
   xSemaphoreGive(mutex_);

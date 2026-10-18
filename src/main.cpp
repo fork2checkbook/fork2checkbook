@@ -1,11 +1,13 @@
 #include <Arduino.h>
 #include <BillDisplay.h>
+#include <BillStorage.h>
 #include <DockGatt.h>
 #include <TapGatt.h>
 #include "config.h"
 
 namespace {
 BillDisplay billDisplay;
+BillStorage billStorage;
 DockGatt dockGatt;
 TapGatt tapGatt;
 uint32_t displayedCents = 0;
@@ -20,8 +22,9 @@ void setup() {
     billDisplay.showAmount(0, "STARTING");
   }
 
-  dockGatt.begin();
-  tapGatt.begin(dockGatt.server());
+  const bool storageMounted = billStorage.begin();
+  dockGatt.begin(storageMounted);
+  tapGatt.begin(dockGatt.server(), storageMounted);
 
   billDisplay.showAmount(0, "BLE READY");
 }

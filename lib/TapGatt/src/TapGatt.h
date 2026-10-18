@@ -39,8 +39,11 @@ class TapGatt {
   };
 
   TapGatt();
-  void begin(BLEServer* server);
+  void begin(BLEServer* server, bool storageMounted);
   void poll();
+  // Queue the same one-shot intent produced by a physical button rising edge.
+  // Touchscreen profiles call this once per distinct press/release cycle.
+  void requestReceiverToggle();
   bool canStageOutbound() const;
   bool stageOutbound(uint8_t kind, uint32_t sessionId, size_t size,
                      uint32_t denominationCents, const char* path);
@@ -114,6 +117,7 @@ class TapGatt {
   ScanCallbacks scanCallbacks_;
   ClientCallbacks clientCallbacks_;
   mutable SemaphoreHandle_t mutex_ = nullptr;
+  bool filesystemMounted_ = false;
   bool storageReady_ = false;
   bool storageBlockedByOrphan_ = false;
 
@@ -165,4 +169,6 @@ class TapGatt {
   portMUX_TYPE statusMux_ = portMUX_INITIALIZER_UNLOCKED;
   char status_[16] = {};
   bool statusDirty_ = false;
+  portMUX_TYPE inputMux_ = portMUX_INITIALIZER_UNLOCKED;
+  bool inputEdgePending_ = false;
 };

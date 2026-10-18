@@ -16,7 +16,7 @@ invoice-first procedure remains an advanced fallback.
 | --- | --- | --- |
 | Dock A / Dock B | Two laptops | Python web desk (`web/`, :8788), Bleak GATT (`dock/`), rgb-lib-python, QVAC voice, Mutinynet broadcast |
 | Bill A / Bill B | WEMOS LOLIN32 and LilyGO TTGO LoRa32 V1.3 / ESP32 | SSD1306 OLED, tap input, radio. **No** rgb-lib, **no** QVAC |
-| Planned watch bill | LilyGO T-Watch 2020 V1 / ESP32 | 240×240 touch app, haptic feedback, battery power, same opaque bearer/GATT contract. **No** rgb-lib, **no** QVAC |
+| Watch bill port | Waveshare ESP32-S3-Touch-AMOLED-2.06 | 410×502 AMOLED, FT3168 touch, PCF85063 clock, same opaque bearer/GATT contract. **No** rgb-lib, **no** QVAC |
 | Disposable note vault | Local trusted process for the selected demo | One fresh rgb-lib wallet N per note, claim hash, immutable plans, recovery journal |
 | GATT-dock | laptop ↔ its bill | On-demand connection. Inventory, commands, status, denomination, opaque chunks |
 | GATT-tap | bill ↔ bill | A press edge arms a bounded receiver window; high RSSI gates the peer. Carries invoice, consignment, or an opaque bearer capsule |
@@ -41,9 +41,12 @@ device selection, not cryptographic device ownership authentication.
 ## Primary RGB mapping: offline bearer note
 
 1. The issuing dock creates fresh isolated note wallet N. If N lacks its
-   2,000-sat Bitcoin fee reserve, the dock prepares a separate immutable
+   configured Bitcoin fee reserve, the dock prepares a separate immutable
    `send_btc` top-up from the issuer wallet; one exact confirmation authorizes
-   that transaction, replacing the manual faucet step.
+   that transaction, replacing the manual faucet step. The current 2,000-sat
+   default proved too small for both a capacity transaction and redemption in
+   one accepted run, so the operator runbook requires extra Mutinynet reserve
+   until sizing is automated.
 2. After the top-up confirms, the dock supersedes the stale RGB plan. A fresh
    exact confirmation funds N with exactly 5 USDT through a transport-free
    witness invoice.
@@ -147,6 +150,10 @@ On-chain rgb-lib, not RLN. Lightning is a channel, not a note.
 
 ### Planned T-Watch 2020 V1 profile
 
+This section records the earlier LilyGO reference evaluation. The active watch
+port now targets the Waveshare ESP32-S3-Touch-AMOLED-2.06; the LilyGO tree
+remains a read-only application/reference source only.
+
 The local reference tree
 `/media/kestl/xwing/Old_documents/Documents/PlatformIO/Projects/My-TTGO-Watch`
 is registered as a read-only implementation reference. Its inspected default
@@ -176,6 +183,30 @@ namespaced; an app error must never format storage. Full implementation and
 acceptance gates are in
 [TTGO-WATCH-APP-PLAN.md](TTGO-WATCH-APP-PLAN.md).
 
+### Active Waveshare ESP32-S3 watch port
+
+The physically verified Waveshare baseline uses a 410×502 CO5300 AMOLED,
+FT3168 touch controller, PCF85063 RTC, 32 MB flash, 8 MB PSRAM, and native USB
+Serial/JTAG. It is externally powered and intentionally always-on for the
+demo. The `waveshare-s3-bill` image implements phases P1-P3: clock/bill
+display, single-owner fail-closed SPIFFS, and the frozen dock GATT/chunk
+contract. The physical dock echo passed on 2026-10-18 with the byte-exact
+520-byte bearer fixture, empty post-ACK inventory, and a visually confirmed
+`EMPTY` / `NO NOTE LOADED` production display. Complete-artifact restoration,
+fail-closed orphan boot, blocked-write rejection, explicit discard recovery,
+and clean-state persistence also passed physically. The next gate added the
+same `TapGatt` protocol with an FT3168 interrupt-driven, rising-edge one-shot
+input. A physical WEMOS -> watch -> WEMOS synthetic $5 round trip passed with
+the exact 520-byte payload and SHA-256, sender deletion only after final ACK,
+and both devices empty afterward. A later live funded 603-byte capsule crossed
+TTGO -> watch -> WEMOS as session `0x220902c8` and was extracted byte-exactly
+with SHA-256
+`159805d2dea99c3dd2601e3dcf07d0dfd6b4c6a400df1970f8b405710d5f310c`.
+The touch adapter remains interrupt-driven while idle and briefly samples an
+active contact until release, allowing repeated one-shot taps without polling
+the shared I2C bus continuously. See
+[WAVESHARE-S3-BASIC-TEST.md](WAVESHARE-S3-BASIC-TEST.md).
+
 ## Delivery status and Sunday priorities
 
 1. Two rgb-lib wallets, witness + OOB consignment over USB serial, docks drive OLEDs/LEDs.
@@ -197,8 +228,8 @@ acceptance gates are in
    extraction, separately gated capacity, one-shot redemption, Wallet B
    settlement, and durable `REDEEMED` closure.
 8. Integrate the accepted operator bearer flow into the web dock without
-   weakening confirmation/recovery boundaries. **Implemented and locally
-   tested; physical browser acceptance is still required.** The web process
+   weakening confirmation/recovery boundaries. **Implemented and physically
+   accepted in both directions.** The web process
    remains the sole owner of Wallet A/B, extraction is private and
    content-addressed, and confirmation/recovery reuse the accepted durable
    note-vault plan and journal.
@@ -208,15 +239,24 @@ acceptance gates are in
    intent grammar, while deterministic policy prepares the no-broadcast
    funding plan and preserves exact confirmation. Real local checks mapped
    “Prepare a $5 note” to `LOAD_NOTE(500)` and “Check my note status” to
-   `INSPECT_NOTE`; full browser/live-wallet acceptance and the fixed adversarial
-   evaluation corpus remain pending.
+   `INSPECT_NOTE`; live-browser wallet acceptance passed, while the fixed
+   adversarial evaluation corpus remains pending.
 10. Rehearse one non-technical three-minute live flow with understandable
    device/dock states and recovery messages. Add WDK only after the RGB + QVAC
    primary flow is stable; WDK is bonus, not a blocker.
-11. Port the accepted physical-bill role to the T-Watch 2020 V1 as an app,
-    keeping the laptop dock unchanged. **Planned; no watch build or physical
-    acceptance has been completed in this repository.** The accepted
-    WEMOS/TTGO pair remains the demo fallback.
+11. Port the accepted physical-bill role to the Waveshare ESP32-S3 watch while
+    keeping the laptop dock unchanged. **P1-P3 implemented, flashed, and
+    physically dock-echo tested:** AMOLED bill display, fail-closed
+    single-owner SPIFFS, and dock GATT compatibility are present. The
+    byte-exact 520-byte bearer echo and empty post-ACK inventory passed on
+    2026-10-18, and the operator visually confirmed the production empty
+    screen. Exact reboot restoration and deliberate orphan recovery also
+    passed physically. **Touchscreen-driven `TapGatt` is implemented, flashed,
+    and physically accepted:** WEMOS -> watch -> WEMOS moved one complete
+    synthetic $5 bearer note byte-exactly and left both devices empty after
+    dock extraction. **A real funded capsule then passed TTGO → watch → WEMOS,
+    was extracted exactly, and redeemed into Wallet A; all three devices
+    finished empty.** The accepted WEMOS/TTGO pair remains the demo fallback.
 
 ## Web dock language
 
@@ -245,8 +285,9 @@ distribution obligations before copying source.
 
 ## Judging
 
-Real RGB is proven by the two accepted Mutinynet transitions. QVAC stays on the
-dock and is now wired to the guarded note-preparation path; full live-browser
-acceptance and the reproducible adversarial evaluation remain open. WDK is not integrated. The selected
+Real RGB is proven by the two accepted Mutinynet transitions in each complete
+cycle. QVAC stays on the dock and is wired to the guarded note-preparation
+path; live-browser acceptance passed, while the reproducible adversarial
+evaluation remains open. WDK is not integrated. The selected
 bearer-note demo is explicitly trusted-vault custody; do not describe it as a
 production self-custodial note.

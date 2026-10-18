@@ -1,6 +1,6 @@
 # Live evidence ledger
 
-Updated: 2026-10-17 CEST
+Updated: 2026-10-18 CEST
 Network: Mutinynet/custom signet only
 
 This is the canonical public index of real RGB and physical-transport evidence
@@ -59,6 +59,33 @@ The browser's temporary `$0` startup display was not the authoritative
 pre-redemption balance. The refreshed rgb-lib wallet journal proved the actual
 Wallet A transition was 45,000,000 → 50,000,000 units.
 
+## Watch-mediated bearer cycle
+
+The third accepted run added the Waveshare ESP32-S3 touchscreen watch as an
+offline intermediary. Wallet B issued the note without choosing a recipient,
+TTGO passed it to the watch, the watch passed it to WEMOS, and only then did
+Wallet A become the redemption wallet.
+
+| Stage | Accepted evidence |
+| --- | --- |
+| Disposable note | note ID `feb839fb-17a9-48b2-a378-f6a89b4f6eef`; isolated ignored wallet N |
+| Bitcoin fee reserve | txid [`9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4`](https://mutinynet.com/tx/9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4); separately confirmed top-up |
+| Wallet B → note N | txid [`8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f`](https://mutinynet.com/tx/8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f); exactly 5,000,000 units |
+| Bearer capsule | canonical v1; 603 bytes; SHA-256 `159805d2dea99c3dd2601e3dcf07d0dfd6b4c6a400df1970f8b405710d5f310c` |
+| Offline physical relay | TTGO → Waveshare watch → WEMOS; kind `0x04`; session `0x220902c8`; four BLE frames on each live send; each sender deleted only after final ACK |
+| Destination extraction | Dock A extracted 603 bytes from WEMOS and matched the capsule SHA-256 byte-for-byte before parsing; WEMOS then became empty |
+| Safe pre-broadcast rejection | first redemption plan `f26ec6a9-9f11-459e-887a-61e90837f896` failed with `InsufficientAllocationSlots`; the journal proved no broadcast and the consumed plan was not reused |
+| Redemption capacity | plan `6c60404f-5c3f-4f30-b76c-95a4943e1ef0`; txid [`8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02`](https://mutinynet.com/tx/8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02); one 1,000-sat free colorable UTXO; 309-sat fee; confirmed in block `3514215` |
+| Reserve recovery | the automatic 2,000-sat reserve left only 691 vanilla sats after capacity creation. The operator added valueless Mutinynet sats; the fresh redemption plan then recorded 12,691 vanilla sats. This is a known demo sizing gap, not an automatic recovery claim |
+| Note N → Wallet A | fresh plan `1810b78e-8dd0-43de-be80-b6ba9e178a49`; txid [`65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5`](https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5); consignment 15,150 bytes; SHA-256 `8a0a4de0eba577a4c40d19520246c3307669dcd10d0dc91a2d77041d313dfd12` |
+| Wallet A settlement | exact txid match; batch `11`; `receive_witness`; one 5,000,000-unit assignment; balance 50,000,000 → 55,000,000; settled/future/spendable all 55,000,000 |
+| Durable terminal state | plan `REDEEMED`; manifest `REDEEMED`; claim `SPENT`; no recovery send; TTGO, watch, and WEMOS finished empty |
+
+The watch used the same inventory-v3 and bearer kind `0x04` contract as the
+two original bills. Its touchscreen armed a one-shot receive window; wallet
+keys, QVAC, rgb-lib, confirmations, and Internet access remained on the
+laptop docks.
+
 ## Accepted direct-mode fallback
 
 The original human-first invoice/consignment path remains a working fallback.
@@ -79,7 +106,8 @@ not separate claims about the bearer-note architecture.
 
 - real RGB funding and redemption using rgb-lib on Mutinynet;
 - empty RGB transport endpoints and exact out-of-band consignments;
-- byte-exact BLE transport and reboot persistence on two ESP32 profiles;
+- byte-exact BLE transport and reboot persistence on two original ESP32
+  profiles, plus a live two-hop relay through the Waveshare watch;
 - an unknown-at-issuance final wallet chosen only at redemption;
 - either reference dock wallet can issue or redeem the complete bearer value;
 - local QVAC can map the primary preparation request into the guarded web flow;
@@ -95,13 +123,15 @@ not separate claims about the bearer-note architecture.
   device-verifiable signature;
 - a completed fixed adversarial QVAC intent evaluation or WDK integration;
 - production web authentication, secure-element resistance, or network-level
-  anonymity.
+  anonymity;
+- automatic reserve sizing sufficient for both capacity creation and the
+  final RGB redemption without an operator-added Mutinynet top-up.
 
 ## Local validation at release
 
-- Python: `165 passed`;
-- native firmware protocol: `13 passed`;
-- WEMOS `esp32-bill` production build: passed;
-- TTGO `ttgo-lora32-oled-test` production build: passed;
+- Python: `174 passed`;
+- native firmware protocol and watch policies: `25 passed`;
+- WEMOS `esp32-bill`, TTGO `ttgo-lora32-oled-test`, and Waveshare
+  `waveshare-s3-bill` production builds: passed;
 - `git diff --check`: passed;
 - public evidence intentionally excludes ignored `.note-vault/` contents.

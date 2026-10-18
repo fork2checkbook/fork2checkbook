@@ -21,7 +21,12 @@ the browser prepares a separate immutable Bitcoin top-up from the issuing dock
 wallet. Review and confirm it, wait for one Mutinynet confirmation, then ask
 **“Check my note”** to obtain a fresh RGB funding plan. No faucet address is
 shown in the normal browser flow, and one confirmation never authorizes both
-broadcasts. The commands below remain the auditable operator equivalent and
+broadcasts. The current automatic 2,000-sat reserve is not sufficient in every
+path: the accepted watch run needed a colorable-capacity transaction and then
+an operator-added Mutinynet top-up before redemption. For the demo, pre-fund
+the disposable note with enough valueless test sats or verify the fresh plan's
+vanilla-sat inventory before confirming. Never reuse a consumed plan after
+adding capacity or sats. The commands below remain the auditable operator equivalent and
 are still required for the separately confirmed capacity fallback. Do not run
 the CLI and web server against the same Wallet A/B datadir at the same time.
 
@@ -39,6 +44,60 @@ the CLI and web server against the same Wallet A/B datadir at the same time.
 ps -eo pid,args | rg 'web\.server|rgb_wallet|rgb_tap|note_wallet_live'
 .venv/bin/python -m pytest -q
 ```
+
+### Automated pre-funded fallback
+
+For the live desk fallback, prepare and settle the disposable $5 note before
+the judging window. Keep both role web docks running; the fallback runner uses
+their HTTP APIs so it never opens either rgb-lib wallet a second time. Its
+accepted default direction matches the reciprocal evidence run: Wallet B and
+TTGO issue, WEMOS carries the received note, and Wallet A becomes the
+previously unknown redeemer.
+
+First prove both registered bills are empty:
+
+```bash
+.venv/bin/python -m scripts.offline_bearer_fallback check
+```
+
+Then run one already-funded `ACTIVE` note. Give its ID explicitly whenever
+more than one active note exists:
+
+```bash
+.venv/bin/python -m scripts.offline_bearer_fallback run \
+  --note-id NOTE_ID
+```
+
+The runner loads the exact capsule, verifies the starting bill holds it, and
+then prints a 12-second radio-quiet tap window. During that window press the
+empty receiving bill once near the bill showing `NOTE`, then release. The
+runner checks for the all-or-nothing transition (`source empty`, `destination
+bearer-held`), extracts the capsule, verifies the SHA-256, and displays the
+immutable redemption plan. It still requires the operator to type the exact
+`CONFIRM <plan-id>` phrase. It never confirms, repeats a send, discards an
+artifact, or weakens a recovery boundary automatically.
+
+After broadcast it performs only import-only recovery when the dock explicitly
+proves `broadcast=true` and `retry_send=false`, polls settlement read-only, and
+finishes only after the note is `REDEEMED` and both physical bills report
+`idle`, denomination zero, and `empty:empty`. A redacted mode-`0600` evidence
+file is written under ignored `.note-vault/demo-runs/`; it contains no
+confirmation phrase, mnemonic, claim secret, or capsule bytes.
+
+To reverse the direction, swap the dock URLs. This does not change A/B into
+sender/receiver authorization roles:
+
+```bash
+.venv/bin/python -m scripts.offline_bearer_fallback run \
+  --issuer-url http://127.0.0.1:8788 \
+  --redeemer-url http://127.0.0.1:8789 \
+  --note-id NOTE_ID
+```
+
+The fallback intentionally starts from an already-funded note. Creating and
+funding a fresh note during a three-minute presentation would make the demo
+depend on two unpredictable Mutinynet confirmation windows. Use the QVAC web
+flow before the presentation to create that note and retain its exact evidence.
 
 ### Archive a failed pre-broadcast test note
 
@@ -190,6 +249,12 @@ confirm, and settle a separate capacity transaction:
   --capsule .note-vault/incoming/received.rgbn \
   --expected-sha256 EXPECTED_CAPSULE_SHA256
 ```
+
+Before confirming that fresh redemption plan, inspect its recorded vanilla
+sat inventory. The accepted watch run demonstrated that a 2,000-sat initial
+reserve can leave only 691 sats after capacity creation, which is insufficient
+for the final send. Add only Mutinynet test sats if necessary, refresh, and
+prepare another fresh immutable plan; do not extend or reuse the earlier one.
 
 ## 6. Confirm once, import, and settle
 

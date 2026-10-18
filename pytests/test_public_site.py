@@ -21,8 +21,10 @@ def test_public_site_describes_the_verified_bearer_flow_honestly():
     assert "QVAC" in html
     assert "WDK" in html
     assert "ILI9341 color display" not in html
-    assert "b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963" in html
-    assert "dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf" in html
+    assert "8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f" in html
+    assert "65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5" in html
+    assert "Waveshare ESP32-S3" in html
+    assert "Wallet A 50 → 55 USDT" in javascript
     assert "String(steps.length).padStart" in javascript
 
 

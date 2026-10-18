@@ -5,34 +5,38 @@ flowchart TB
     classDef contract fill:#f1f5f9,stroke:#64748b,color:#1e293b,stroke-width:2px
 
     subgraph firmware["ESP32 bill firmware"]
-        main["src/main.cpp and ttgo_lora32_test.cpp"]:::implemented
-        display["BillDisplay SSD1306"]:::implemented
+        main["WEMOS TTGO and waveshare composition roots"]:::implemented
+        display["SSD1306 and Waveshare AMOLED display adapters"]:::implemented
         chunk["ChunkProtocol CRC and ordered frames"]:::verified
         dockGatt["DockGatt inventory v3 and staging"]:::verified
         tapGatt["TapGatt one-shot RSSI relay"]:::verified
+        storage["BillStorage and recovery policy"]:::verified
+        touch["Waveshare FT3168 one-shot input"]:::verified
         config["include/config.h pins and UUIDs"]:::contract
         main --> display
         main --> dockGatt
         main --> tapGatt
+        main --> storage
+        main --> touch
         chunk --> dockGatt
         chunk --> tapGatt
         config --> main
     end
 
     subgraph dockApp["Laptop dock and wallet code"]
-        webServer["web/server.py direct-mode desk"]:::implemented
+        webServer["web/server.py human-first bearer desk"]:::verified
         registry["web/device_registry.py"]:::implemented
         bleak["dock/bill_dock.py"]:::verified
         direct["web/rgb/tap_flow.py and native.py"]:::verified
         noteLive["web/rgb/note_live.py one-shot note lifecycle"]:::verified
         capsule["web/rgb/bearer_capsule.py canonical v1"]:::verified
-        operator["scripts/note_wallet_live.py"]:::verified
-        qvac["QVAC intent router and evaluation"]:::planned
+        operator["note_wallet_live and offline fallback scripts"]:::verified
+        qvac["Local QVAC intent router"]:::verified
         webServer --> registry --> bleak
         webServer --> direct
         operator --> noteLive --> capsule
         operator --> bleak
-        qvac -.-> webServer
+        qvac --> webServer
     end
 
     subgraph publicDocs["Public explanation"]

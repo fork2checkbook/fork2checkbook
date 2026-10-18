@@ -612,7 +612,7 @@ h3 {
 }
 .hardware-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 .hardware-card {
@@ -697,6 +697,15 @@ h3 {
   background: #152039;
   color: #6adbd4;
   border-color: #50606c;
+}
+.board-watch {
+  transform: rotate(2deg);
+  background: #251f31;
+}
+.board-watch .board-screen {
+  background: #140d1d;
+  color: #f4d980;
+  border-color: #6f5d83;
 }
 .board-usb {
   position: absolute;

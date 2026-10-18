@@ -252,7 +252,7 @@ def test_dock_gatt_defers_advertising_restart_until_disconnect_teardown():
     )
 
     assert "DockGatt dockGatt" in main
-    assert "dockGatt.begin()" in main
+    assert "dockGatt.begin(storageMounted)" in main
     assert "onDisconnect(BLEServer* server) override" in dock_header
     assert "server_->setCallbacks(&callbacks_)" in dock_source
     assert "advertisingRestartPending_ = true" in dock_source
@@ -296,3 +296,119 @@ def test_dock_gatt_exposes_chunk_fsm_and_polls_it():
     assert 'command == "diag:chunk:echo"' in dock_source
     assert 'command == "chunk:discard"' in dock_source
     assert "dockGatt.poll()" in main
+
+
+def test_all_bill_profiles_mount_spiffs_once_without_formatting():
+    storage = (
+        ROOT / "lib" / "BillStorage" / "src" / "BillStorage.cpp"
+    ).read_text(encoding="utf-8")
+    dock = (ROOT / "lib" / "DockGatt" / "src" / "DockGatt.cpp").read_text(
+        encoding="utf-8"
+    )
+    tap = (ROOT / "lib" / "TapGatt" / "src" / "TapGatt.cpp").read_text(
+        encoding="utf-8"
+    )
+    main = (ROOT / "src" / "main.cpp").read_text(encoding="utf-8")
+    ttgo = (ROOT / "src" / "ttgo_lora32_test.cpp").read_text(encoding="utf-8")
+    waveshare = (ROOT / "src" / "waveshare_s3_bill.cpp").read_text(
+        encoding="utf-8"
+    )
+
+    assert "SPIFFS.begin(false)" in storage
+    assert "SPIFFS.begin(true)" not in storage + dock + tap
+    assert "SPIFFS.begin(" not in dock + tap
+    assert "BillStorage billStorage" in main
+    assert "BillStorage billStorage" in ttgo
+    assert "tapGatt.begin(dockGatt.server(), storageMounted)" in main
+    assert "tapGatt.begin(dockGatt.server(), storageMounted)" in ttgo
+    assert "BillStorage billStorage" in waveshare
+    assert "tapGatt.begin(dockGatt.server(), storageMounted)" in waveshare
+
+
+def test_dock_boot_blocks_partial_or_inconsistent_artifacts():
+    policy = (
+        ROOT
+        / "lib"
+        / "ArtifactRecoveryPolicy"
+        / "src"
+        / "ArtifactRecoveryPolicy.h"
+    ).read_text(encoding="utf-8")
+    dock = (ROOT / "lib" / "DockGatt" / "src" / "DockGatt.cpp").read_text(
+        encoding="utf-8"
+    )
+
+    assert "kRecoveryBlocked" in policy
+    assert "hasPart" in policy
+    assert "classifyArtifactBootState" in dock
+    assert "SPIFFS.remove(CHUNK_META_PATH)" not in dock.split(
+        "BLEDevice::init", 1
+    )[0]
+    assert "storageReady_ = filesystemMounted_" in dock
+
+
+def test_waveshare_production_reuses_tap_contract_and_touch_input():
+    platformio = (ROOT / "platformio.ini").read_text(encoding="utf-8")
+    config = (ROOT / "include" / "config.h").read_text(encoding="utf-8")
+    source = (ROOT / "src" / "waveshare_s3_bill.cpp").read_text(
+        encoding="utf-8"
+    )
+    display = (
+        ROOT
+        / "lib"
+        / "WaveshareBillDisplay"
+        / "src"
+        / "WaveshareBillDisplay.cpp"
+    ).read_text(encoding="utf-8")
+    tap = (ROOT / "lib" / "TapGatt" / "src" / "TapGatt.cpp").read_text(
+        encoding="utf-8"
+    )
+    touch_source = (
+        ROOT
+        / "lib"
+        / "WaveshareTouchInput"
+        / "src"
+        / "WaveshareTouchInput.cpp"
+    ).read_text(encoding="utf-8")
+    touch_header = (
+        ROOT
+        / "lib"
+        / "WaveshareTouchInput"
+        / "src"
+        / "WaveshareTouchInput.h"
+    ).read_text(encoding="utf-8")
+
+    production = platformio.split("[env:waveshare-s3-bill]", 1)[1].split(
+        "[env:native]", 1
+    )[0]
+    partitions = (ROOT / "partitions_waveshare_s3.csv").read_text(
+        encoding="utf-8"
+    )
+    assert "partitions_waveshare_s3.csv" in production
+    assert "app0,     app,  factory, 0x10000, 0x480000" in partitions
+    assert "spiffs,   data, spiffs,  0x490000,0x400000" in partitions
+    assert "ota_0" not in partitions
+    assert "ota_1" not in partitions
+    assert "+<waveshare_s3_bill.cpp>" in production
+    assert "RGB_BILL_WAVESHARE_S3=1" in production
+    assert "lib_ignore = BillDisplay, TftBillDisplay" in production
+    assert "TapGatt" not in production.split("lib_ignore =", 1)[1].split(
+        "\n", 1
+    )[0]
+    assert 'BLE_DEVICE_NAME[] = "RgbBill-Watch"' in config
+    assert 'BLE_IDENTITY[] = "bill-waveshare-s3-v1"' in config
+    assert "DockGatt dockGatt" in source
+    assert "#include <TapGatt.h>" in source
+    assert "TapGatt tapGatt" in source
+    assert "WaveshareTouchInput touchInput" in source
+    assert "tapGatt.requestReceiverToggle()" in source
+    assert "tapGatt.begin(dockGatt.server(), storageMounted)" in source
+    assert "requestReceiverToggle" in tap
+    assert "ScreenTouchGate" in touch_header
+    assert "kPollIntervalMs = 20" in touch_source
+    assert "!touchInterruptPending && !gate_.contactActive()" in touch_source
+    assert "gate_.update(fingers)" in touch_source
+    assert "dockGatt.begin(storageMounted)" in source
+    assert "ArtifactInventory::RECOVERY_BLOCKED" in source
+    assert "if (cents_ > 0)" in display
+    assert 'centeredText("EMPTY"' in display
+    assert 'centeredText("TAP SCREEN TO RECEIVE"' in display

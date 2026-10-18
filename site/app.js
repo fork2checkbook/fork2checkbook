@@ -11,7 +11,7 @@ const steps = [
     title: "Create one disposable funded note.",
     description:
       "The issuing wallet sends exactly 5 USDT to an isolated one-use rgb-lib wallet. After Mutinynet confirms the transfer, the note wallet holds the allocation that backs the bearer capability; no final wallet is named.",
-    detail: "Funding tx · b325cbe4…3963 · 5,000,000 units",
+    detail: "Funding tx · 8bfa3219…d46f · 5,000,000 units",
   },
   {
     source: "CAPSULE",
@@ -23,19 +23,19 @@ const steps = [
     title: "Load a canonical bearer capsule.",
     description:
       "The trusted note vault emits a compact capability that identifies the funded note and its one-shot redemption authority. The dock verifies and loads the exact artifact onto the starting bill.",
-    detail: "Accepted live capsule · 603 bytes · SHA-256 a3877521…5144",
+    detail: "Accepted live capsule · 603 bytes · SHA-256 159805d2…310c",
   },
   {
     source: "$5 NOTE",
     sourceLabel: "BILL A",
-    channel: "BLE · A → B",
+    channel: "BLE · TTGO → WATCH → WEMOS",
     destinationLabel: "BILL B",
     destination: "$5 NOTE",
     tag: "DOCKS AND INTERNET ARE OFF",
     title: "Physical possession moves offline.",
     description:
       "Press the empty bill once near the current holder. A 15-second high-RSSI window transfers artifact kind 0x04 in acknowledged chunks, promotes it for relay, and restores it after reboot.",
-    detail: "Accepted live relay · session 0x3de6f5e7 · 4 frames",
+    detail: "Accepted live relay · session 0x220902c8 · 4 frames per send",
   },
   {
     source: "CAPSULE",
@@ -59,7 +59,7 @@ const steps = [
     title: "Confirm one immutable redemption.",
     description:
       "The vault prepares an immutable plan tied to the fresh invoice. A human enters its exact confirmation phrase once. The recovery journal records any ambiguous result and never auto-resends.",
-    detail: "Plan 95c33df6…be87 · first redemption wins",
+    detail: "Plan 1810b78e…8a49 · first redemption wins",
   },
   {
     source: "RGB PROOF",
@@ -71,7 +71,7 @@ const steps = [
     title: "Import the proof and settle.",
     description:
       "The chosen wallet imports the exact rgb-lib consignment and refreshes against Mutinynet. The note is durably marked REDEEMED and replay recovery returns the recorded result without reopening or broadcasting again.",
-    detail: "15,057-byte consignment · Wallet B 50 → 55 USDT",
+    detail: "15,150-byte consignment · Wallet A 50 → 55 USDT",
   },
 ];
 
@@ -145,11 +145,11 @@ const descriptions = {
   "06-chunk-frame":
     "Chunk frame — the acknowledged binary envelope used for invoices, consignments, and bearer capsules.",
   "07-bill-hardware":
-    "Bill hardware — the WEMOS LOLIN32 and TTGO OLED profiles with GPIO12 one-shot touch input.",
+    "Bill hardware — WEMOS and TTGO OLED profiles plus the Waveshare ESP32-S3 touchscreen watch.",
   "08-trust-boundaries":
     "Trust boundaries — the online note vault, copyable bearer capability, human confirmation, and exact-byte verification.",
   "09-live-evidence-timeline":
-    "Live evidence timeline — funded note, offline hardware relay, one-shot redemption, and Wallet B settlement.",
+    "Live evidence timeline — funded note, watch-mediated offline relay, one-shot redemption, and Wallet A settlement.",
   "10-note-vault-state":
     "Note-vault state machine — funded, active, redemption planned, broadcast recorded, imported, and redeemed with recovery edges.",
 };

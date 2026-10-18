@@ -91,6 +91,16 @@ The two actual RGB transitions are Wallet A → note wallet N and note wallet N
 Mutinynet trusted-custody prototype with first-redemption-wins copy risk—not a
 production bearer instrument or an offline double-spend solution.
 
+The Waveshare watch port is also physically accepted in the live carry path.
+A fresh settled 603-byte $5 capsule crossed TTGO → Waveshare watch → WEMOS and
+was extracted byte-for-byte at Dock A. The retained note then completed its
+separately confirmed RGB redemption into the previously unknown Wallet A:
+transaction
+[`65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5`](https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5)
+settled one 5,000,000-unit assignment and moved Wallet A from 50 to 55 USDT.
+The note is terminal `REDEEMED`, its claim is `SPENT`, and the physical devices
+finished empty.
+
 Wallet A and Wallet B are the accepted reference run, not permanent sender and
 recipient roles. In the current bearer protocol either isolated dock wallet may
 issue a note it funds, every tap moves the note's complete value, and the
@@ -133,6 +143,11 @@ Design: [docs/DESIGN.md](docs/DESIGN.md). Diagrams:
 [docs/FOLDER.md](docs/FOLDER.md). Two-board tap acceptance:
 [docs/TAP-GATT-TEST.md](docs/TAP-GATT-TEST.md).
 Real wallet tap acceptance: [docs/RGB-TAP-LIVE.md](docs/RGB-TAP-LIVE.md).
+The pre-funded operator fallback is automated by
+[`scripts/offline_bearer_fallback.py`](scripts/offline_bearer_fallback.py): it
+waits in radio-quiet windows for the physical tap, preserves the exact human
+redemption confirmation, verifies final settlement, and requires both bills
+to finish empty.
 Web RGB acceptance: [docs/WEB-RGB-TEST.md](docs/WEB-RGB-TEST.md).
 Offline bearer-note decision and proof plan:
 [docs/OFFLINE-RGB-DEMO-DESIGN.md](docs/OFFLINE-RGB-DEMO-DESIGN.md).
@@ -159,7 +174,7 @@ Search Palimnex from `/media/kestl/andor/github/rgbhackathon`. Skills under
 | Layer | Tech |
 | --- | --- |
 | Bill radio | WEMOS LOLIN32 / ESP32-WROOM-32, Arduino, PlatformIO `esp32-bill` |
-| Planned wearable bill | LilyGO T-Watch 2020 V1; minimal clock + RGB Bill touchscreen firmware implementing the same frozen GATT contract |
+| Wearable bill | Waveshare ESP32-S3-Touch-AMOLED-2.06; accepted always-on clock, AMOLED bill UI, fail-closed storage, dock GATT, and touchscreen one-shot TapGatt. LilyGO T-Watch 2020 V1 remains a read-only reference/future port |
 | Dock radio | Python 3.10+, Bleak 3.0.2 (`dock/`) |
 | Dock desk | Python HTTP + static UI (`web/`, :8788). Rust sidecar optional (`web/rust/`) |
 | Bearer note vault | One ignored rgb-lib datadir and mnemonic per disposable note; one-shot recovery journal |
@@ -191,16 +206,19 @@ The newer offline bearer path is accepted at the operator CLI and firmware
 layers, and is now integrated into the local web docks as explicit **Load**,
 **Pass**, **Redeem**, **Recover**, and **Refresh settlement** actions. The web
 implementation preserves the same exact confirmation and no-resend recovery
-boundaries; physical browser acceptance of this new UI path is still pending.
-Its funding txid is
-`b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963`;
-its redemption txid is
-`dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf`.
-At the recorded settlement check the redemption had 11 confirmations and
-Wallet B showed 55,000,000 settled/future/spendable units. Local QVAC now maps
+boundaries. It has now passed live browser/API acceptance in both directions,
+including the Waveshare watch carry path. The latest accepted run used funding
+txid
+`8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f`
+and redemption txid
+`65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5`;
+Wallet A finished with 55,000,000 settled/future/spendable units. Local QVAC now maps
 the primary “Prepare a $5 note” request into the guarded bearer-funding plan;
 the deterministic dock now replaces manual note-faucet funding with a separate
 immutable Bitcoin top-up from the issuing wallet, while retaining distinct
 exact confirmations for the BTC and RGB broadcasts, settlement proof, and
-hardware-load gates. Full live-browser acceptance and the fixed adversarial
-intent evaluation remain open. WDK is not integrated.
+hardware-load gates. The live watch run exposed a reserve-sizing gap: the
+automatic 2,000-sat note reserve was insufficient after creating redemption
+capacity, so the operator added Mutinynet sats before the fresh redemption
+plan. Automating that larger reserve and the fixed adversarial QVAC intent
+evaluation remain open. WDK is not integrated.

@@ -9,10 +9,10 @@ flowchart LR
     humanB["Eventual holder"]:::external
 
     subgraph dockAZone["Dock A laptop"]
-        webA["Direct-mode web desk"]:::implemented
+        webA["Human-first web dock"]:::verified
         walletA["Issuing dock wallet | example A"]:::verified
         bleA["Bleak dock central"]:::verified
-        qvacA["QVAC typed intent"]:::planned
+        qvacA["Local QVAC typed intent"]:::verified
         webA --> walletA
         webA --> bleA
         qvacA -.-> webA
@@ -28,15 +28,17 @@ flowchart LR
 
     subgraph physical["Offline physical zone"]
         billA["WEMOS bill | bearer capsule"]:::verified
+        watch["Waveshare watch | bearer capsule"]:::verified
         billB["TTGO bill | bearer capsule"]:::verified
-        billA <-.->|"BLE kind 04 | no dock or Internet"| billB
+        billA <-.->|"BLE kind 04"| watch
+        watch <-.->|"no dock or Internet"| billB
     end
 
     subgraph dockBZone["Dock B laptop"]
         bleB["Bleak extraction"]:::verified
         walletB["Holder-chosen wallet | example B"]:::verified
         settle["Exact txid + assignment + balance verifier"]:::verified
-        qvacB["QVAC redeem intent"]:::planned
+        qvacB["Local QVAC redeem intent"]:::verified
         bleB --> walletB --> settle
         qvacB -.-> walletB
     end

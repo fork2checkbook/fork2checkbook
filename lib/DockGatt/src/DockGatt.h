@@ -23,9 +23,10 @@ class DockGatt {
   };
 
   DockGatt();
-  void begin();
+  void begin(bool storageMounted);
   void poll();
   BLEServer* server() const { return server_; }
+  bool storageAvailable() const;
   bool takeDisplayUpdate(uint32_t& cents, char* status, size_t statusSize);
   bool takeInboundTransfer(InboundTransfer& transfer);
   bool peekInboundTransfer(InboundTransfer& transfer) const;
@@ -90,6 +91,7 @@ class DockGatt {
   ChunkCallbacks chunkCallbacks_;
 
   SemaphoreHandle_t chunkMutex_ = nullptr;
+  bool filesystemMounted_ = false;
   bool storageReady_ = false;
   bool storageBlockedByOrphan_ = false;
   bool connected_ = false;

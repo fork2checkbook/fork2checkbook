@@ -347,7 +347,7 @@
             <h2 id="hardware-title">Small devices.<br />Real hardware.</h2>
           </div>
           <p class="section-copy">
-            Two ESP32 prototypes.<br />Two role-scoped Python docks.
+            Three accepted ESP32 carriers.<br />Two role-scoped Python docks.
           </p>
         </div>
         <div class="hardware-grid">
@@ -414,6 +414,38 @@
               </div>
             </dl>
           </article>
+          <article class="hardware-card">
+            <div class="hardware-top">
+              <span class="eyebrow">WATCH INTERMEDIARY / ACCEPTED LIVE RELAY</span
+              ><span class="hardware-index">W</span>
+            </div>
+            <div class="board-illustration board-watch" aria-hidden="true">
+              <div class="board-pins"></div>
+              <span class="board-chip">ESP32-S3</span
+              ><span class="board-screen">NOTE<br /><b>$5.00</b></span
+              ><span class="board-usb"></span>
+            </div>
+            <h3>Waveshare Touch AMOLED</h3>
+            <p>
+              The always-on ESP32-S3 watch uses the same bearer contract. Its
+              touchscreen armed a one-shot receive, relayed a live funded note,
+              and finished empty without holding wallet keys.
+            </p>
+            <dl>
+              <div>
+                <dt>Display</dt>
+                <dd>410 × 502 CO5300 AMOLED</dd>
+              </div>
+              <div>
+                <dt>Touch input</dt>
+                <dd>FT3168 · one-shot receiver</dd>
+              </div>
+              <div>
+                <dt>Storage</dt>
+                <dd>Fail-closed 4 MiB SPIFFS</dd>
+              </div>
+            </dl>
+          </article>
         </div>
         <div class="dock-summary">
           <span class="dock-icon" aria-hidden="true">⌘</span>
@@ -421,10 +453,9 @@
             <h3>The brains stay on the dock.</h3>
             <p>
               Python + Bleak connect to the bill. rgb-lib opens one isolated
-              wallet per role. The direct-transfer flow has a local web desk;
-              the accepted bearer-note lifecycle currently uses the guarded
-              operator CLI for planning, exact confirmation, recovery, and
-              settlement refresh.
+              wallet per role. The local web desk and QVAC intent router expose
+              the accepted bearer-note lifecycle while deterministic code owns
+              planning, exact confirmation, recovery, and settlement checks.
             </p>
           </div>
           <a
@@ -434,13 +465,11 @@
           >
         </div>
         <p class="section-copy">
-          A purpose-built LilyGO T-Watch 2020 V1 image is the planned wearable
-          profile: a basic clock plus the fork2checkbook touchscreen app, with no
-          unrelated watch apps or phone/network services. It will reuse the
-          frozen BLE and bearer-artifact contract while every wallet,
-          confirmation, QVAC action, and network operation stays on the laptop
-          dock. This port is planned, not yet physically accepted; the two
-          boards above remain the live fallback.
+          The Waveshare image is purpose-built: a basic clock plus the
+          fork2checkbook touchscreen bill, with no unrelated watch apps or
+          phone/network services. Wallets, confirmations, QVAC, and network
+          operations stay on the laptop dock. The WEMOS/TTGO pair remains the
+          simpler fallback.
         </p>
       </section>
 
@@ -453,7 +482,7 @@
             </div>
             <span class="verified-label"
               ><span class="live-dot" aria-hidden="true"></span> LIVE ACCEPTED /
-              15 OCT 2026</span
+              18 OCT 2026</span
             >
           </div>
           <div class="proof-grid">
@@ -461,12 +490,13 @@
               <span class="eyebrow">CONTROLLED MUTINYNET BEARER RUN</span>
               <p class="proof-amount">5 <span>USDT</span></p>
               <p>
-                Wallet A funded note wallet N. Its capability crossed WEMOS →
-                TTGO without a dock or network. N then redeemed into Wallet B.
+                Wallet B funded note wallet N. Its capability crossed TTGO →
+                Waveshare watch → WEMOS without a dock or network. N then
+                redeemed into the previously unknown Wallet A.
               </p>
               <div class="balance-row">
                 <span>Note N <b>0 → 5 → 0</b></span
-                ><span>Wallet B <b>50 → 55</b></span>
+                ><span>Wallet A <b>50 → 55</b></span>
               </div>
               <span class="proof-test-label"
                 >TEST NETWORK · NO REAL DOLLAR VALUE</span
@@ -481,7 +511,7 @@
               <article>
                 <span class="metric-value">4 <small>frames</small></span>
                 <h3>Bill-to-bill relay</h3>
-                <p>Kind 0x04 moved over BLE and restored after TTGO reboot.</p>
+                <p>Kind 0x04 moved through the touchscreen watch in two offline hops.</p>
               </article>
               <article>
                 <span class="metric-value">2 <small>RGB txs</small></span>
@@ -489,10 +519,10 @@
                 <p>The offline middle hop is not misrepresented as an RGB transition.</p>
               </article>
               <article>
-                <span class="metric-value">15,057 <small>bytes</small></span>
+                <span class="metric-value">15,150 <small>bytes</small></span>
                 <h3>Exact redemption proof</h3>
                 <p>
-                  Wallet B imported the retained consignment and verified one
+                  Wallet A imported the retained consignment and verified one
                   exact 5,000,000-unit assignment.
                 </p>
               </article>
@@ -501,18 +531,18 @@
           <div class="transaction">
             <span class="eyebrow">RGB FUNDING TRANSACTION</span
             ><a
-              href="https://mutinynet.com/tx/b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963"
+              href="https://mutinynet.com/tx/8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f"
               ><code
-                >b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963</code
+                >8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f</code
               ><span aria-hidden="true">↗</span></a
             >
           </div>
           <div class="transaction">
             <span class="eyebrow">RGB REDEMPTION TRANSACTION</span
             ><a
-              href="https://mutinynet.com/tx/dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf"
+              href="https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5"
               ><code
-                >dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf</code
+                >65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5</code
               ><span aria-hidden="true">↗</span></a
             >
           </div>
@@ -549,7 +579,7 @@
           <article>
             <span class="detail-symbol" aria-hidden="true">△</span>
             <h3>Still to integrate</h3>
-            <p>QVAC local inference works, but action routing is open. WDK is not integrated. Mutinynet has no real dollar value.</p>
+            <p>QVAC routes guarded note actions locally, but its fixed adversarial evaluation is open. WDK is not integrated. Mutinynet has no real dollar value.</p>
           </article>
         </div>
       </section>
@@ -639,9 +669,9 @@
             <p class="eyebrow section-number">07 / WHERE WE ARE</p>
             <h2>Working prototype.<br />More to build.</h2>
             <p class="section-copy">
-              Direct mode and the offline bearer-note round trip are accepted.
-              The next product gate is a human-first bearer web flow, followed
-              by measured local QVAC intent routing.
+              Direct mode, the human-first bearer web flow, and a live
+              watch-mediated round trip are accepted. Next are reserve sizing,
+              measured adversarial QVAC evaluation, and demo rehearsal.
             </p>
           </div>
           <ol class="roadmap">
@@ -684,32 +714,32 @@
                 <h3>Offline bearer-note round trip</h3>
                 <p>
                   Disposable note funding, physical relay, exact extraction,
-                  one-shot redemption, and Wallet B settlement passed live.
+                  one-shot redemption, and settlement into either wallet passed live.
                 </p>
               </div>
               <span class="status-label">VERIFIED</span>
             </li>
             <li>
-              <span class="roadmap-dot current" aria-hidden="true">↗</span>
+              <span class="roadmap-dot done" aria-hidden="true">✓</span>
               <div>
                 <h3>Bearer web flow + QVAC intent</h3>
                 <p>
-                  Expose the accepted operator sequence without weakening its
-                  gates, then measure local typed intent and safe recovery help.
+                  Local QVAC proposes guarded actions; deterministic policy,
+                  exact confirmation, and no-resend recovery remain authoritative.
                 </p>
               </div>
-              <span class="status-label current">NEXT GATE</span>
+              <span class="status-label">VERIFIED</span>
             </li>
             <li>
-              <span class="roadmap-dot future" aria-hidden="true">○</span>
+              <span class="roadmap-dot done" aria-hidden="true">✓</span>
               <div>
-                <h3>T-Watch wearable bill app</h3>
+                <h3>Touchscreen wearable bill</h3>
                 <p>
-                  Build a minimal clock + fork2checkbook image for the T-Watch 2020
-                  V1 without moving the dock or wallet onto it.
+                  Waveshare ESP32-S3 clock + bill firmware relayed and redeemed
+                  a real funded capsule without moving the wallet onto it.
                 </p>
               </div>
-              <span class="status-label">PLANNED</span>
+              <span class="status-label">VERIFIED</span>
             </li>
           </ol>
         </div>

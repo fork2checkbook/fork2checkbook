@@ -4,6 +4,7 @@
 #else
 #include <BillDisplay.h>
 #endif
+#include <BillStorage.h>
 #include <DockGatt.h>
 #include <TapGatt.h>
 
@@ -21,6 +22,7 @@ TftBillDisplay billDisplay;
 #else
 BillDisplay billDisplay;
 #endif
+BillStorage billStorage;
 DockGatt dockGatt;
 TapGatt tapGatt;
 uint32_t displayedCents = 0;
@@ -64,8 +66,9 @@ void setup() {
 #endif
   }
 
-  dockGatt.begin();
-  tapGatt.begin(dockGatt.server());
+  const bool storageMounted = billStorage.begin();
+  dockGatt.begin(storageMounted);
+  tapGatt.begin(dockGatt.server(), storageMounted);
   Serial.printf("TTGO_TEST: BLE PASS - advertising as %s\n", BLE_DEVICE_NAME);
   Serial.printf("TTGO_TEST: identity=%s\n", BLE_IDENTITY);
   billDisplay.showAmount(0, "BLE READY");

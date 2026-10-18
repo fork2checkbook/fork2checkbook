@@ -26,9 +26,22 @@ flowchart TB
         usbB --> boardB
     end
 
+    subgraph watch["Wearable intermediary Waveshare ESP32-S3"]
+        boardW["ESP32-S3 | 32 MB flash | 8 MB PSRAM"]:::board
+        amoled["CO5300 AMOLED | 410 by 502"]:::peripheral
+        touchW["FT3168 touch | one-shot receiver"]:::peripheral
+        rtc["PCF85063 RTC | always-on demo clock"]:::peripheral
+        flashW["SPIFFS 4 MiB | fail-closed recovery"]:::storage
+        boardW --> amoled
+        boardW --> touchW
+        boardW --> rtc
+        boardW --> flashW
+    end
+
     radio["ESP32 BLE | dock peripheral and tap peer"]:::peripheral
     flash["Factory app 3 MiB | SPIFFS 896 KiB | no OTA"]:::storage
     boardA --> radio
     boardB --> radio
+    boardW --> radio
     boardA --> flash
     boardB --> flash

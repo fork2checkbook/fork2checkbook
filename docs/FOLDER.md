@@ -21,6 +21,7 @@ ideas/bill/                 this project (git + PlatformIO root)
   scripts/qvac_fetch_instruct.py  QWEN3_600M_INST_Q4 into .qvac + one completion
   scripts/rgb_tap.py        real invoice/consignment wallet-to-BLE operator flow
   scripts/note_wallet_live.py  disposable-note funding/redemption gates + refresh
+  scripts/offline_bearer_fallback.py  pre-funded two-dock demo + tap/settlement wait
   .vscode/extensions.json   PlatformIO IDE + Python
   include/config.h          pins + frozen dock UUIDs
   src/main.cpp              firmware entry (composition only)
@@ -50,6 +51,7 @@ ideas/bill/                 this project (git + PlatformIO root)
     agents-prompt.md        paste for other coding agents
     agents-prompt-openai-56.md  OpenAI 5.6: test env + Palimnex bring-up
     TTGO-LORA32-V1.3-TEST.md    second bill hardware test protocol
+    WAVESHARE-S3-BASIC-TEST.md  accepted AMOLED/watch transport and live relay
     RGB-TAP-LIVE.md         controlled real-wallet tap acceptance and recovery
     WEB-RGB-TEST.md         browser-driven two-dock acceptance and API contract
     OFFLINE-RGB-DEMO-DESIGN.md  selected trusted-vault architecture and gaps
@@ -71,3 +73,5 @@ External read-only implementation references:
 - `/media/kestl/andor/github/waveshares3`: BLE session patterns only.
 - `/media/kestl/xwing/Old_documents/Documents/PlatformIO/Projects/My-TTGO-Watch`:
   T-Watch 2020 V1 hardware, LVGL app, touch, power, and sleep/wake patterns.
+- `/media/kestl/andor/github/ESP32-S3-Touch-AMOLED-2.06`:
+  Waveshare vendor examples and board documentation reference.

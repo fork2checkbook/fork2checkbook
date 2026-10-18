@@ -172,11 +172,15 @@ Required invariants:
    confirmation-gated Bitcoin transaction; a consumed RGB confirmation never
    authorizes it. After capacity confirms, a fresh RGB plan and confirmation
    are required.
-6. When a fresh note lacks its 2,000-sat fee reserve, the issuing dock prepares
+6. When a fresh note lacks its configured fee reserve, the issuing dock prepares
    a separate immutable Bitcoin top-up plan. Exact confirmation authorizes one
    `send_btc` to the bound note address; it cannot authorize the RGB funding
    send. A confirmed top-up always causes the stale RGB plan to be superseded
    before a new RGB confirmation is shown.
+   The current 2,000-sat default proved insufficient after a redemption
+   capacity transaction in the watch-mediated run. Until sizing is automated,
+   the operator verifies the fresh plan's vanilla-sat inventory and adds only
+   valueless Mutinynet sats before creating another immutable plan.
 7. Broadcast results and exact consignment path/hash are committed before the
    API reports success.
 8. An ambiguous send is never retried automatically. A pinned rgb-lib
@@ -278,11 +282,11 @@ and one recovery explanation.
 
 | Priority | Question | Current result | Next proof or fallback |
 | --- | --- | --- | --- |
-| P0 | Can a fresh disposable wallet receive and later send this USDT? | **Accepted live.** Both RGB txids confirmed; Wallet B imported the exact consignment and settled +5 USDT. | Preserve direct mode as fallback. |
-| P0 | How many sats/UTXOs must N hold? | **Measured live.** Redemption required a free colorable UTXO; one separately confirmed 8,000-sat UTXO unblocked it. | Pre-create capacity before judging. |
+| P0 | Can a fresh disposable wallet receive and later send this USDT? | **Accepted live in both directions.** The latest run settled +5 USDT into previously unknown Wallet A after TTGO → watch → WEMOS relay. | Preserve direct mode as fallback. |
+| P0 | How many sats/UTXOs must N hold? | **Measured live.** Redemption required a free colorable UTXO. The latest 1,000-sat capacity transaction left only 691 vanilla sats from the automatic 2,000-sat reserve, so an operator top-up was required. | Increase or compute reserve before judging and pre-create capacity. |
 | P0 | Can recovery avoid duplicate sends? | **Accepted in tests and live journal.** Confirmation, broadcast, import, and settlement states are durable; refresh replay performs no send. | Manual reconciliation remains for unknown send outcomes. |
-| P0 | Does bearer relay persist across reboot? | **Accepted live.** 603-byte WEMOS → TTGO capsule restored after reboot and extracted with exact SHA-256. | Direct mode remains fallback. |
-| P0 | Is QVAC 600M reliable on five intents? | Open. Local SDK/model inference only is proven. | Fixed deterministic eval; buttons plus truthful explanation if below threshold. |
+| P0 | Does bearer relay persist across reboot? | **Accepted live.** The original 603-byte WEMOS → TTGO capsule restored after reboot; a later funded capsule crossed TTGO → Waveshare watch → WEMOS and extracted with exact SHA-256. | Direct mode remains fallback. |
+| P0 | Is QVAC 600M reliable on five intents? | Primary live intents are integrated behind deterministic policy; fixed adversarial reliability is still open. | Run the checked-in eval; buttons plus truthful explanation if below threshold. |
 | P1 | Can a dock verify a capsule offline? | Open. v1 has canonical SHA-256 integrity and online vault authentication only. | Signature spike or display `UNVERIFIED`. |
 | P1 | What happens on copied-note redemption? | One-shot durable claim is implemented; a deliberate copied-capsule live bounce has not been run. | Automated no-second-send proof plus optional controlled replay. |
 | P1 | What does Esplora 429/timeout do? | Read-only 429/timeouts were recovered without another send. | Keep read retry separate from ambiguous send reconciliation. |
@@ -303,9 +307,9 @@ and one recovery explanation.
 
 ## Ranked remaining gaps
 
-1. Integrate the accepted load/redeem workflow into the web dock without
-   weakening one-use confirmation or no-resend recovery.
-2. Integrate and evaluate QVAC typed intents and recovery explanations.
+1. Compute a reserve that covers capacity creation and redemption without a
+   manual note-wallet top-up.
+2. Run and publish the fixed adversarial QVAC intent evaluation.
 3. Add an explicit copied-capsule replay result with no second send.
 4. Rehearse the three-minute flow and capture one clean evidence bundle.
 5. Add offline capsule signatures if they do not destabilize the demo.
@@ -321,9 +325,8 @@ and one recovery explanation.
   <https://docs.qvac.tether.io/sdk/>
 - QVAC runtime lifecycle:
   <https://docs.qvac.tether.io/sdk/how-it-works/>
-- Verified locally on 2026-10-15: 125 Python tests; prior baseline also passed
-  11 native tests, both firmware builds, QVAC heartbeat, and cached 600M GPU
-  completion.
+- Current release validation counts and all three production firmware builds
+  are recorded in [`LIVE-EVIDENCE.md`](LIVE-EVIDENCE.md).
 - Accepted direct-mode evidence is in `docs/PROTOCOL.md`, including Mutinynet
   txid `1f8953866f24f5b64ec02875aa51507fc6c76777646680eddfb573247cf5d45f`.
 - Accepted bearer-note txids, hashes, balances, and truth boundaries are in

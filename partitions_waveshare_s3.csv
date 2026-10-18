@@ -1,0 +1,9 @@
+# fork2checkbook Waveshare 32 MiB flash layout. One 4.5 MiB factory app,
+# 4 MiB SPIFFS, no OTA slot. Remaining flash is intentionally unallocated;
+# USB is the prototype update path and the bounded filesystem avoids SPIFFS
+# page/object index limits while leaving ample room for 640 KiB artifacts.
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+app0,     app,  factory, 0x10000, 0x480000,
+spiffs,   data, spiffs,  0x490000,0x400000,
+coredump, data, coredump,0x890000,0x10000,

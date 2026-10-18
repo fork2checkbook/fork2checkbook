@@ -49,10 +49,12 @@ Workflow reference:
 - `docs/LIVE-EVIDENCE.md`: accepted bearer-note txids, hashes, balances, and
   explicit proof boundaries.
 - `docs/OFFLINE-BEARER-RUNBOOK.md`: exact operator and recovery sequence.
-- `docs/TTGO-WATCH-APP-PLAN.md`: planned wearable device profile and its
-  physical acceptance gates; it is not yet an accepted hardware claim.
+- `docs/WAVESHARE-S3-BASIC-TEST.md`: accepted AMOLED, storage, GATT,
+  touchscreen relay, and live funded-capsule evidence.
+- `docs/TTGO-WATCH-APP-PLAN.md`: retained LilyGO reference/future-port plan.
 
 Keep the status copy aligned with those records. The browser-driven physical
-transfer and the offline bearer-note round trip are accepted. Local QVAC
-inference is verified; connecting it to the deterministic, confirmation-gated
-action flow remains an integration gate. WDK is not integrated.
+transfer, human-first bearer web flow, and the Waveshare-mediated offline
+round trip are accepted. Local QVAC is connected to deterministic,
+confirmation-gated actions; the fixed adversarial intent evaluation remains
+open. WDK is not integrated.
