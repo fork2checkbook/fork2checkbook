@@ -31,7 +31,7 @@
   --note-ink: #0f3d22;
   --note-label: #356b48;
   --note-seal: rgba(20, 74, 40, 0.4);
-  --note-status-bg: rgba(20, 74, 40, 0.1);
+  --note-status-bg: rgba(20, 74, 40, 0.14);
   --note-status-ink: #2c5c3c;
   --on-note: #ffffff;
   --accent-grad: linear-gradient(90deg, var(--note) 0%, var(--gold) 100%);
@@ -362,6 +362,7 @@ h2 {
   align-items: center;
   margin: 0;
   padding: 0.24rem 0.7rem;
+  border: 1px solid var(--note-seal);
   border-radius: 999px;
   background: var(--note-status-bg);
   font: 0.72rem/1.4 var(--mono);
@@ -816,7 +817,7 @@ button:disabled {
 .stepper::before {
   content: "";
   position: absolute;
-  top: 0.95rem;
+  top: 1.28rem;
   left: calc(100% / 6);
   right: calc(100% / 6);
   height: 2px;
@@ -827,13 +828,17 @@ button:disabled {
 .step {
   position: relative;
   z-index: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.6rem;
+  row-gap: 0.12rem;
   align-items: center;
-  gap: 0.6rem;
   padding: 0.15rem 0;
 }
 
 .step-dot {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   display: grid;
   place-items: center;
   width: 1.9rem;
@@ -849,6 +854,8 @@ button:disabled {
 }
 
 .step-name {
+  grid-column: 2;
+  grid-row: 1;
   display: block;
   font-size: 0.92rem;
   font-weight: 700;
@@ -856,6 +863,8 @@ button:disabled {
 }
 
 .step-hint {
+  grid-column: 2;
+  grid-row: 2;
   display: block;
   font: 0.68rem/1.4 var(--mono);
   color: var(--ink-soft);
@@ -1361,7 +1370,7 @@ menu {
     font-size: 0.68rem;
   }
   .stepper::before {
-    top: 0.8rem;
+    top: 0.9rem;
   }
   .step-name {
     font-size: 0.82rem;
