@@ -528,24 +528,179 @@
               </article>
             </div>
           </div>
-          <div class="transaction">
-            <span class="eyebrow">RGB FUNDING TRANSACTION</span
-            ><a
-              href="https://mutinynet.com/tx/8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f"
-              ><code
-                >8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f</code
-              ><span aria-hidden="true">↗</span></a
-            >
+          <div class="evidence-ledger-heading">
+            <div>
+              <span class="eyebrow">PUBLIC MUTINYNET LEDGER</span>
+              <h3>Every accepted transaction, verified in a real block.</h3>
+            </div>
+            <p>
+              Live Esplora verification on 18 Oct 2026 at tip 3,515,070.
+              Every row below returned <code>confirmed: true</code>. Block
+              heights and explorer links make each claim independently
+              checkable.
+            </p>
           </div>
-          <div class="transaction">
-            <span class="eyebrow">RGB REDEMPTION TRANSACTION</span
-            ><a
-              href="https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5"
-              ><code
-                >65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5</code
-              ><span aria-hidden="true">↗</span></a
-            >
+          <div class="evidence-legend" aria-label="Evidence categories">
+            <span><i class="legend-swatch rgb" aria-hidden="true"></i>RGB value move</span>
+            <span><i class="legend-swatch btc" aria-hidden="true"></i>Bitcoin support</span>
+            <span><i class="legend-swatch setup" aria-hidden="true"></i>Setup allocation</span>
           </div>
+          <div
+            class="evidence-table-wrap"
+            role="region"
+            aria-label="Block-verified transaction evidence"
+            tabindex="0"
+          >
+            <table class="evidence-table">
+              <thead>
+                <tr>
+                  <th scope="col">Run</th>
+                  <th scope="col">Proof</th>
+                  <th scope="col">Result</th>
+                  <th scope="col">Transaction</th>
+                  <th scope="col">Block</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Watch bearer</th>
+                  <td><span class="proof-kind btc">Bitcoin</span>Fee reserve</td>
+                  <td>Issuing-wallet fee inventory</td>
+                  <td><a href="https://mutinynet.com/tx/9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4"><code>9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000000d7607340f006ca6b5bdf227501cbb2731ca06b5d416b51c973d1c88abd">3,514,180</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Watch bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Funding</td>
+                  <td>Wallet B → note N · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f"><code>8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000323d0857eb1046fccde9ab527e190f7c300aa5b81b490aa077b4be0aba3">3,514,181</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Watch bearer</th>
+                  <td><span class="proof-kind btc">Bitcoin</span>Capacity</td>
+                  <td>Free colorable UTXO</td>
+                  <td><a href="https://mutinynet.com/tx/8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02"><code>8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000334fd79074ee7cfbe87760b61a3ea08169ed6e72272702935b802d92c1f">3,514,215</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Watch bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Redemption</td>
+                  <td>Note N → Wallet A · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5"><code>65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000000efaced4f87d49164f55c205c569b6d188a7ba01279146ac7671b2f04c6">3,514,231</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reciprocal bearer</th>
+                  <td><span class="proof-kind btc">Bitcoin</span>Funding capacity</td>
+                  <td>Disposable-note capacity</td>
+                  <td><a href="https://mutinynet.com/tx/b3427bbbe07dcf25c27d7871f2ecc1a8db9dff8cd0a818d831b455b28980294b"><code>b3427bbbe07dcf25c27d7871f2ecc1a8db9dff8cd0a818d831b455b28980294b</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000002ed03f3d55e06eeff1575cdcba06ee5752c51f59c7b7f4abde05f0af345">3,513,524</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reciprocal bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Funding</td>
+                  <td>Wallet B → note N · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/4e5c6c9401a0a1b7d778b61215ea70cb81a42619a528a597cdef27e51d70494d"><code>4e5c6c9401a0a1b7d778b61215ea70cb81a42619a528a597cdef27e51d70494d</code></a></td>
+                  <td><a href="https://mutinynet.com/block/0000032f3a2d0e05804c620dfce59f142ccca3bc13db54be67e88a02bfc52bca">3,513,528</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reciprocal bearer</th>
+                  <td><span class="proof-kind btc">Bitcoin</span>Capacity</td>
+                  <td>Free colorable UTXO</td>
+                  <td><a href="https://mutinynet.com/tx/3d9dfb341d129c9debf56e0b36f6a266fa4bdcfaceb2818b5c34a442850e6557"><code>3d9dfb341d129c9debf56e0b36f6a266fa4bdcfaceb2818b5c34a442850e6557</code></a></td>
+                  <td><a href="https://mutinynet.com/block/0000017c13102bf29f6e57fb0d1e59073c4635e74d4e0593cceb7e1d4b1430d6">3,513,614</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reciprocal bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Redemption</td>
+                  <td>Note N → Wallet A · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/83fa1a8b1eb61c6bbd7509d723f9cd02a28b5f848017c8dbbe6f1eee0d2506c9"><code>83fa1a8b1eb61c6bbd7509d723f9cd02a28b5f848017c8dbbe6f1eee0d2506c9</code></a></td>
+                  <td><a href="https://mutinynet.com/block/0000023b27dd48bbbf96be7bd5bea33d311d2473f0787b0900fcb834b0604740">3,513,623</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">First bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Funding</td>
+                  <td>Wallet A → note N · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963"><code>b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000138a4bbdc898a41a5294c7de13a3910d43f545b135913d8391a297d29d7">3,508,184</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">First bearer</th>
+                  <td><span class="proof-kind btc">Bitcoin</span>Capacity</td>
+                  <td>8,000-sat colorable UTXO</td>
+                  <td><a href="https://mutinynet.com/tx/089a8231b4c8916d9b1aac3cfd445b11dc9ec87583f15cd8eeec072b4f0734bb"><code>089a8231b4c8916d9b1aac3cfd445b11dc9ec87583f15cd8eeec072b4f0734bb</code></a></td>
+                  <td><a href="https://mutinynet.com/block/0000011d13a0fc54ec3dd9af00a7c3090c8156f575273bbc5ec6e89d3df4e82c">3,508,518</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">First bearer</th>
+                  <td><span class="proof-kind rgb">RGB</span>Redemption</td>
+                  <td>Note N → Wallet B · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf"><code>dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000001bfebff2f852eb7f379b8beff1ea02a13cbcfb7297d89f844cbc0035b64">3,508,531</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Direct fallback</th>
+                  <td><span class="proof-kind rgb">RGB</span>Transfer</td>
+                  <td>Wallet A → Wallet B · 20 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/72b6d753eaf788032cdd72ebd9e0c831380fc4e4c97ef5d66f538e62c5e460de"><code>72b6d753eaf788032cdd72ebd9e0c831380fc4e4c97ef5d66f538e62c5e460de</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000001db272b83d74f2026179ddc9f384ae69b1cc8c41eedcb3266f5affaef37">3,495,492</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Direct fallback</th>
+                  <td><span class="proof-kind rgb">RGB</span>Transfer</td>
+                  <td>Wallet A → Wallet B · 20 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/97885ddffc2305aabf1574d78be8cf102d0afb1f104529c817fc4dcff541a1fb"><code>97885ddffc2305aabf1574d78be8cf102d0afb1f104529c817fc4dcff541a1fb</code></a></td>
+                  <td><a href="https://mutinynet.com/block/000000e18655033b073d12891ebbd8cd5a5edaa0ae0cd0ce4f1e0eee4be7acb3">3,498,861</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Direct fallback</th>
+                  <td><span class="proof-kind rgb">RGB</span>Transfer</td>
+                  <td>Wallet A → Wallet B · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/109d2d24c572d0b74fbd50c1dd2911b3030f0fc963f6018916397d9891b650e3"><code>109d2d24c572d0b74fbd50c1dd2911b3030f0fc963f6018916397d9891b650e3</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000025a21619df2b16140f098ca7c7eda52d27612db3f894e48817de25cac3">3,506,146</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Direct fallback</th>
+                  <td><span class="proof-kind rgb">RGB</span>Transfer</td>
+                  <td>Wallet A → Wallet B · 5 USDT</td>
+                  <td><a href="https://mutinynet.com/tx/1f8953866f24f5b64ec02875aa51507fc6c76777646680eddfb573247cf5d45f"><code>1f8953866f24f5b64ec02875aa51507fc6c76777646680eddfb573247cf5d45f</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000267aae6de709933eefb15e71db53b3209dc4cdc6aa14fe6009053ece7bd">3,507,561</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Initial setup</th>
+                  <td><span class="proof-kind setup">Setup</span>Faucet receive</td>
+                  <td>Original 100-USDT allocation</td>
+                  <td><a href="https://mutinynet.com/tx/921614229c1420fa75bf4f2f5aeb3a925b705a1b4a99f4797b5218fc121c3f85"><code>921614229c1420fa75bf4f2f5aeb3a925b705a1b4a99f4797b5218fc121c3f85</code></a></td>
+                  <td><a href="https://mutinynet.com/block/00000172b83200ec242c4e93ef137c159b7692910ddcecb181fc9a56eaa087f7">3,495,147</a></td>
+                  <td><span class="confirmed">Confirmed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="evidence-note">
+            “USDT” here is the project’s valueless Mutinynet RGB asset. Bitcoin
+            reserve and capacity rows support RGB transactions but do not move
+            RGB value. The physical BLE relay is evidenced by matching capsule
+            hashes and device logs because it deliberately creates no chain
+            transaction.
+          </p>
           <a
             class="text-link"
             href="https://github.com/fork2checkbook/fork2checkbook/blob/main/docs/LIVE-EVIDENCE.md"

@@ -9,6 +9,37 @@ bytes, or wallet datadir. Historical test records remain in their dedicated
 documents; when summary copy disagrees with this ledger, this ledger and the
 wallet journals are authoritative.
 
+## Block verification index
+
+All 16 transaction IDs below were checked against the live Mutinynet Esplora
+API on 2026-10-18 at chain tip `3515070`. Every status response returned
+`confirmed: true`. The fixed inclusion height and linked block make the result
+independently checkable without treating the off-chain BLE handoff as a chain
+transaction.
+
+| Run | Layer | Purpose and result | Transaction | Confirmed block |
+| --- | --- | --- | --- | ---: |
+| Watch bearer | Bitcoin support | Issuing-wallet fee reserve | [`9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4`](https://mutinynet.com/tx/9d26e9f5130fae0dc1373e8e21f1456566147d84df3ff1e0ccc071f7c717aac4) | [`3514180`](https://mutinynet.com/block/000000d7607340f006ca6b5bdf227501cbb2731ca06b5d416b51c973d1c88abd) |
+| Watch bearer | RGB | Wallet B → note N, 5 USDT funding | [`8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f`](https://mutinynet.com/tx/8bfa3219a931dc1d3017183698465fb7e15a74b7c688eb8af6350351c437d46f) | [`3514181`](https://mutinynet.com/block/00000323d0857eb1046fccde9ab527e190f7c300aa5b81b490aa077b4be0aba3) |
+| Watch bearer | Bitcoin support | Redemption capacity, free colorable UTXO | [`8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02`](https://mutinynet.com/tx/8301d3893e1c1f6a7697304fd7c65365c527284dc8f9443bf5cbb7904b952b02) | [`3514215`](https://mutinynet.com/block/00000334fd79074ee7cfbe87760b61a3ea08169ed6e72272702935b802d92c1f) |
+| Watch bearer | RGB | Note N → Wallet A, 5 USDT redemption | [`65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5`](https://mutinynet.com/tx/65b4a62bf3d55af3e8968ea4bbb2a9b257725c5c945de715f94a35d87795c6d5) | [`3514231`](https://mutinynet.com/block/000000efaced4f87d49164f55c205c569b6d188a7ba01279146ac7671b2f04c6) |
+| Reciprocal bearer | Bitcoin support | Disposable-note funding capacity | [`b3427bbbe07dcf25c27d7871f2ecc1a8db9dff8cd0a818d831b455b28980294b`](https://mutinynet.com/tx/b3427bbbe07dcf25c27d7871f2ecc1a8db9dff8cd0a818d831b455b28980294b) | [`3513524`](https://mutinynet.com/block/000002ed03f3d55e06eeff1575cdcba06ee5752c51f59c7b7f4abde05f0af345) |
+| Reciprocal bearer | RGB | Wallet B → note N, 5 USDT funding | [`4e5c6c9401a0a1b7d778b61215ea70cb81a42619a528a597cdef27e51d70494d`](https://mutinynet.com/tx/4e5c6c9401a0a1b7d778b61215ea70cb81a42619a528a597cdef27e51d70494d) | [`3513528`](https://mutinynet.com/block/0000032f3a2d0e05804c620dfce59f142ccca3bc13db54be67e88a02bfc52bca) |
+| Reciprocal bearer | Bitcoin support | Redemption capacity, free colorable UTXO | [`3d9dfb341d129c9debf56e0b36f6a266fa4bdcfaceb2818b5c34a442850e6557`](https://mutinynet.com/tx/3d9dfb341d129c9debf56e0b36f6a266fa4bdcfaceb2818b5c34a442850e6557) | [`3513614`](https://mutinynet.com/block/0000017c13102bf29f6e57fb0d1e59073c4635e74d4e0593cceb7e1d4b1430d6) |
+| Reciprocal bearer | RGB | Note N → Wallet A, 5 USDT redemption | [`83fa1a8b1eb61c6bbd7509d723f9cd02a28b5f848017c8dbbe6f1eee0d2506c9`](https://mutinynet.com/tx/83fa1a8b1eb61c6bbd7509d723f9cd02a28b5f848017c8dbbe6f1eee0d2506c9) | [`3513623`](https://mutinynet.com/block/0000023b27dd48bbbf96be7bd5bea33d311d2473f0787b0900fcb834b0604740) |
+| First bearer | RGB | Wallet A → note N, 5 USDT funding | [`b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963`](https://mutinynet.com/tx/b325cbe40c282e661c40ff8555cb6cb0fc9867a32855feb8b17d7756c9a83963) | [`3508184`](https://mutinynet.com/block/00000138a4bbdc898a41a5294c7de13a3910d43f545b135913d8391a297d29d7) |
+| First bearer | Bitcoin support | Redemption capacity, 8,000-sat colorable UTXO | [`089a8231b4c8916d9b1aac3cfd445b11dc9ec87583f15cd8eeec072b4f0734bb`](https://mutinynet.com/tx/089a8231b4c8916d9b1aac3cfd445b11dc9ec87583f15cd8eeec072b4f0734bb) | [`3508518`](https://mutinynet.com/block/0000011d13a0fc54ec3dd9af00a7c3090c8156f575273bbc5ec6e89d3df4e82c) |
+| First bearer | RGB | Note N → Wallet B, 5 USDT redemption | [`dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf`](https://mutinynet.com/tx/dfe138b0983f6238103d2e5c57bf0848fdd5b7fd733162299fb4c6e5e9f427bf) | [`3508531`](https://mutinynet.com/block/000001bfebff2f852eb7f379b8beff1ea02a13cbcfb7297d89f844cbc0035b64) |
+| Direct fallback | RGB | Wallet A → Wallet B, 20 USDT | [`72b6d753eaf788032cdd72ebd9e0c831380fc4e4c97ef5d66f538e62c5e460de`](https://mutinynet.com/tx/72b6d753eaf788032cdd72ebd9e0c831380fc4e4c97ef5d66f538e62c5e460de) | [`3495492`](https://mutinynet.com/block/000001db272b83d74f2026179ddc9f384ae69b1cc8c41eedcb3266f5affaef37) |
+| Direct fallback | RGB | Wallet A → Wallet B, 20 USDT | [`97885ddffc2305aabf1574d78be8cf102d0afb1f104529c817fc4dcff541a1fb`](https://mutinynet.com/tx/97885ddffc2305aabf1574d78be8cf102d0afb1f104529c817fc4dcff541a1fb) | [`3498861`](https://mutinynet.com/block/000000e18655033b073d12891ebbd8cd5a5edaa0ae0cd0ce4f1e0eee4be7acb3) |
+| Direct fallback | RGB | Wallet A → Wallet B, 5 USDT | [`109d2d24c572d0b74fbd50c1dd2911b3030f0fc963f6018916397d9891b650e3`](https://mutinynet.com/tx/109d2d24c572d0b74fbd50c1dd2911b3030f0fc963f6018916397d9891b650e3) | [`3506146`](https://mutinynet.com/block/00000025a21619df2b16140f098ca7c7eda52d27612db3f894e48817de25cac3) |
+| Direct fallback | RGB | Wallet A → Wallet B, 5 USDT | [`1f8953866f24f5b64ec02875aa51507fc6c76777646680eddfb573247cf5d45f`](https://mutinynet.com/tx/1f8953866f24f5b64ec02875aa51507fc6c76777646680eddfb573247cf5d45f) | [`3507561`](https://mutinynet.com/block/00000267aae6de709933eefb15e71db53b3209dc4cdc6aa14fe6009053ece7bd) |
+| Initial setup | RGB | Original 100-USDT faucet allocation | [`921614229c1420fa75bf4f2f5aeb3a925b705a1b4a99f4797b5218fc121c3f85`](https://mutinynet.com/tx/921614229c1420fa75bf4f2f5aeb3a925b705a1b4a99f4797b5218fc121c3f85) | [`3495147`](https://mutinynet.com/block/00000172b83200ec242c4e93ef137c159b7692910ddcecb181fc9a56eaa087f7) |
+
+“USDT” in this ledger is the project's valueless Mutinynet RGB asset. Bitcoin
+support rows are real Bitcoin test-network transactions used for fees or
+colorable outputs, not additional RGB value transfers.
+
 ## Offline bearer-note vertical slice
 
 The selected demo makes exactly two RGB state transitions. Between them, the

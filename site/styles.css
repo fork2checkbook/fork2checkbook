@@ -904,6 +904,156 @@ dd {
 .proof-section .text-link:hover {
   color: #4c6537;
 }
+.evidence-ledger-heading {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
+  align-items: end;
+  gap: 50px;
+  border-top: 1px solid #31572b55;
+  margin-top: 52px;
+  padding-top: 32px;
+}
+.evidence-ledger-heading h3 {
+  font: 500 28px/1.15 var(--heading);
+  letter-spacing: -1px;
+  margin: 9px 0 0;
+}
+.evidence-ledger-heading p,
+.evidence-note {
+  color: #3d552f;
+  font-size: 11px;
+  line-height: 1.75;
+  margin: 0;
+}
+.evidence-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 24px 0 12px;
+  color: #344b2a;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.evidence-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #233e1e;
+  border-radius: 50%;
+}
+.legend-swatch.rgb {
+  background: #214b25;
+}
+.legend-swatch.btc {
+  background: #dfb84a;
+}
+.legend-swatch.setup {
+  background: transparent;
+}
+.evidence-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #31572b66;
+  border-radius: 7px;
+  background: #efffc963;
+}
+.evidence-table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  font-size: 10px;
+  line-height: 1.45;
+}
+.evidence-table th,
+.evidence-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #31572b35;
+  text-align: left;
+  vertical-align: middle;
+}
+.evidence-table thead th {
+  background: #36542b18;
+  color: #344b2a;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.evidence-table tbody th {
+  width: 115px;
+  font: 600 11px var(--body);
+}
+.evidence-table tr:last-child th,
+.evidence-table tr:last-child td {
+  border-bottom: 0;
+}
+.evidence-table td:nth-child(2) {
+  min-width: 135px;
+}
+.evidence-table td:nth-child(3) {
+  min-width: 190px;
+}
+.evidence-table td:nth-child(4) {
+  width: 330px;
+}
+.evidence-table code {
+  font-size: 8px;
+  overflow-wrap: anywhere;
+}
+.evidence-table a {
+  text-decoration: underline;
+  text-decoration-color: #31572b66;
+  text-underline-offset: 3px;
+}
+.proof-kind {
+  display: inline-block;
+  min-width: 45px;
+  border: 1px solid #31572b77;
+  border-radius: 999px;
+  padding: 3px 6px;
+  margin-right: 7px;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.proof-kind.rgb {
+  background: #214b25;
+  color: #e9ffd4;
+}
+.proof-kind.btc {
+  background: #dfb84a;
+  color: #2c260e;
+}
+.proof-kind.setup {
+  background: transparent;
+}
+.confirmed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #234b25;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.confirmed::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #214b25;
+  border-radius: 50%;
+}
+.evidence-note {
+  max-width: 830px;
+  margin: 18px 0 22px;
+}
 .diagram-toolbar {
   display: flex;
   align-items: center;
@@ -1263,6 +1413,10 @@ dd {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+  .evidence-ledger-heading {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
   .roadmap-layout {
     grid-template-columns: 1fr;
