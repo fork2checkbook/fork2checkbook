@@ -1,10 +1,15 @@
+/* ==========================================================================
+   fork2checkbook — dock desk UI
+   Banknote-inspired: paper, ink, guilloche, gold. Light + dark.
+   ========================================================================== */
+
 :root {
   color-scheme: light dark;
   --ink: #17160f;
   --ink-soft: #5f594b;
-  --paper: #efe7d6;
+  --paper: #ece3cf;
   --panel: #fffdf7;
-  --panel-2: #faf7f0;
+  --panel-2: #f7f2e6;
   --line: #ddd4c1;
   --line-strong: #c9bfa8;
   --note: #1f6b3a;
@@ -28,12 +33,16 @@
   --note-seal: rgba(20, 74, 40, 0.4);
   --note-status-bg: rgba(20, 74, 40, 0.1);
   --note-status-ink: #2c5c3c;
+  --on-note: #ffffff;
+  --accent-grad: linear-gradient(90deg, var(--note) 0%, var(--gold) 100%);
   --shadow-sm: 0 1px 2px rgba(23, 22, 15, 0.06),
     0 2px 8px rgba(23, 22, 15, 0.05);
   --shadow-md: 0 2px 4px rgba(23, 22, 15, 0.06),
     0 14px 34px rgba(23, 22, 15, 0.12);
-  --radius: 14px;
-  --radius-sm: 9px;
+  --shadow-note: 0 2px 6px rgba(20, 74, 40, 0.12),
+    0 18px 44px rgba(20, 74, 40, 0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
     Georgia, serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
@@ -44,7 +53,7 @@
   :root {
     --ink: #ece7d9;
     --ink-soft: #a49d8b;
-    --paper: #131410;
+    --paper: #12130f;
     --panel: #1b1c16;
     --panel-2: #23241c;
     --line: #333428;
@@ -62,17 +71,23 @@
     --field: #20211a;
     --code: #171812;
     --log: #22231b;
-    --note-grad: linear-gradient(135deg, #14251a 0%, #0f1f15 55%, #0b1710 100%);
+    --note-grad: linear-gradient(135deg, #16291c 0%, #102318 55%, #0c1c13 100%);
     --note-line: #2c5537;
     --note-ink: #bfe6cc;
     --note-label: #7bbf95;
     --note-seal: rgba(127, 211, 156, 0.35);
     --note-status-bg: rgba(127, 211, 156, 0.12);
     --note-status-ink: #8fd3a8;
+    --on-note: #10241a;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5);
+    --shadow-note: 0 2px 8px rgba(0, 0, 0, 0.5), 0 22px 48px rgba(0, 0, 0, 0.55);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
 
 * {
   box-sizing: border-box;
@@ -80,6 +95,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -89,9 +105,14 @@ body {
   color: var(--ink);
   background-color: var(--paper);
   background-image: radial-gradient(
-      1200px 600px at 50% -200px,
-      rgba(255, 255, 255, 0.9),
+      1300px 640px at 50% -220px,
+      rgba(255, 255, 255, 0.85),
       transparent 70%
+    ),
+    radial-gradient(
+      900px 500px at 110% 110%,
+      rgba(185, 138, 47, 0.07),
+      transparent 65%
     ),
     repeating-linear-gradient(
       45deg,
@@ -104,9 +125,14 @@ body {
 @media (prefers-color-scheme: dark) {
   body {
     background-image: radial-gradient(
-        1200px 600px at 50% -200px,
-        rgba(87, 181, 126, 0.12),
+        1300px 640px at 50% -220px,
+        rgba(87, 181, 126, 0.1),
         transparent 70%
+      ),
+      radial-gradient(
+        900px 500px at 110% 110%,
+        rgba(217, 180, 95, 0.05),
+        transparent 65%
       ),
       repeating-linear-gradient(
         45deg,
@@ -121,35 +147,85 @@ body {
   color: var(--note-deep);
 }
 
-main {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+.skip-link {
+  position: fixed;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 100;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--note);
+  color: var(--on-note);
+  font: 600 0.85rem/1.2 var(--serif);
+  text-decoration: none;
+  transform: translateY(-300%);
+  transition: transform 0.12s ease;
 }
+
+.skip-link:focus-visible {
+  transform: none;
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+main {
+  max-width: 66rem;
+  margin: 0 auto;
+  padding: 2.6rem 1.5rem 4rem;
+}
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
 
 .masthead {
   margin-bottom: 1.6rem;
 }
 
 .kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0;
-  letter-spacing: 0.16em;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--note-line, var(--line));
+  border-radius: 999px;
+  background: var(--note-tint);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--note);
 }
 
+.kicker::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--note);
+}
+
 h1 {
-  margin: 0.25rem 0 0.4rem;
-  font-size: clamp(1.9rem, 5vw, 2.4rem);
-  line-height: 1.05;
-  letter-spacing: -0.015em;
+  margin: 0.7rem 0 0.45rem;
+  font-size: clamp(2.1rem, 5.5vw, 2.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+h1::after {
+  content: "";
+  display: block;
+  width: 4.2rem;
+  height: 0.32rem;
+  margin-top: 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-grad);
 }
 
 .meta {
-  margin: 0;
-  font: 0.72rem/1.5 var(--mono);
+  margin: 0.65rem 0 0;
+  font: 0.74rem/1.5 var(--mono);
   color: var(--ink-soft);
   overflow-wrap: anywhere;
 }
@@ -168,99 +244,268 @@ h2 {
   letter-spacing: -0.01em;
 }
 
+/* --------------------------------------------------------------------------
+   Banknote hero
+   -------------------------------------------------------------------------- */
+
+.note {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  padding: 1.7rem 1.6rem;
+  margin: 0 0 1.15rem;
+  color: var(--note-ink);
+  background: var(--note-grad);
+  border: 1px solid var(--note-line);
+  box-shadow: var(--shadow-note);
+}
+
+.note::after {
+  content: "";
+  position: absolute;
+  inset: 0.45rem;
+  border: 1px dashed var(--note-seal);
+  border-radius: calc(var(--radius) - 5px);
+  pointer-events: none;
+}
+
+.note-grid {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-radial-gradient(
+      circle at 16% 20%,
+      var(--note-seal) 0 1px,
+      transparent 1px 9px
+    ),
+    repeating-radial-gradient(
+      circle at 84% 80%,
+      var(--note-seal) 0 1px,
+      transparent 1px 12px
+    ),
+    repeating-radial-gradient(
+      circle at 78% 12%,
+      var(--note-seal) 0 1px,
+      transparent 1px 7px
+    );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.note-thread {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 26%;
+  width: 1.5rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(185, 138, 47, 0.4) 30%,
+    rgba(31, 107, 58, 0.4) 60%,
+    rgba(255, 255, 255, 0.35)
+  );
+  opacity: 0.5;
+  filter: blur(0.4px);
+  transform: skewX(-8deg);
+  pointer-events: none;
+}
+
+.note-watermark {
+  position: absolute;
+  right: 2.2rem;
+  top: 50%;
+  translate: 0 -50%;
+  font: 700 13rem/1 var(--serif);
+  color: var(--note-ink);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+}
+
+.note-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.4rem 1.2rem;
+}
+
+.note .label {
+  flex-basis: 100%;
+  color: var(--note-label);
+}
+
+#denomination {
+  margin: 0.15rem 0 0;
+  font-size: clamp(2.9rem, 10vw, 4.1rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--note-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  #denomination {
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+.note .status {
+  margin: 0 0 0 auto;
+  margin-bottom: 0.55rem;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.24rem 0.7rem;
+  border-radius: 999px;
+  background: var(--note-status-bg);
+  font: 0.72rem/1.4 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--note-status-ink);
+}
+
+.status::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.note-seal {
+  position: absolute;
+  top: 1.05rem;
+  right: 1.15rem;
+  z-index: 1;
+  width: 3.2rem;
+  height: 3.2rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--note-seal);
+  border-radius: 50%;
+  font: 700 0.78rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--note-seal);
+  transform: rotate(-11deg);
+}
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+
 .card {
+  position: relative;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.25rem 1.4rem;
+  padding: 1.3rem 1.45rem;
   margin: 1.15rem 0;
   background: var(--panel);
   box-shadow: var(--shadow-sm);
 }
 
-.device-panel {
-  border-top: 3px solid var(--note);
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.45rem;
+  right: 1.45rem;
+  height: 3px;
+  margin: 0 -1.45rem;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: var(--accent-grad);
 }
 
-.wallet-panel {
-  border-top: 3px solid var(--gold);
+.device-panel::before {
+  background: var(--note);
 }
 
-.wallet-heading-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: start;
+.wallet-panel::before {
+  background: var(--gold);
 }
 
-.wallet-heading-row h2 {
-  margin: 0.15rem 0 0;
-}
-
-.wallet-network {
-  border: 1px solid var(--gold-line);
-  border-radius: 999px;
-  padding: 0.28rem 0.6rem;
-  font: 0.68rem/1.2 var(--mono);
-  white-space: nowrap;
-  color: var(--gold-ink);
-  background: var(--gold-bg);
-}
-
-.wallet-facts {
+.duo {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem 1rem;
-  margin: 1rem 0;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
 }
 
-.wallet-facts div {
-  min-width: 0;
+.duo .card {
+  margin: 0;
 }
 
-.wallet-facts dt {
-  font: 0.68rem/1.4 var(--mono);
-  color: var(--ink-soft);
-  text-transform: uppercase;
+@media (min-width: 56rem) {
+  .duo {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.wallet-facts dd {
-  margin: 0.15rem 0 0;
-  font-size: 0.86rem;
-  overflow-wrap: anywhere;
-}
-
-.wallet-help {
-  margin: 0.55rem 0 0;
-  color: var(--ink-soft);
-  font-size: 0.78rem;
-}
-
-.device-heading-row {
+.device-heading-row,
+.wallet-heading-row,
+.workflow-heading-row {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   align-items: start;
 }
 
-.device-heading-row h2 {
+.device-heading-row h2,
+.wallet-heading-row h2,
+.workflow-heading-row h2 {
   margin: 0.15rem 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   Chips and badges
+   -------------------------------------------------------------------------- */
+
+.device-badge,
+.wallet-network,
+.workflow-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font: 700 0.7rem/1.2 var(--mono);
+  white-space: nowrap;
+  letter-spacing: 0.04em;
 }
 
 .device-badge {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.28rem 0.6rem;
-  font: 0.68rem/1.2 var(--mono);
-  white-space: nowrap;
   color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
   background: var(--panel-2);
 }
 
+.device-badge::before,
+.wallet-network::before,
+.workflow-step::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
 .device-badge.ready {
-  color: #fff;
+  color: var(--on-note);
   background: var(--note);
   border-color: var(--note);
   box-shadow: 0 0 0 3px var(--note-tint);
+}
+
+.device-badge.ready::before {
+  opacity: 1;
+  background: var(--on-note);
 }
 
 .device-badge.configured {
@@ -268,6 +513,101 @@ h2 {
   background: var(--gold-bg);
   border-color: var(--gold-line);
 }
+
+.wallet-network {
+  color: var(--gold-ink);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-line);
+}
+
+.workflow-step {
+  color: var(--gold-ink);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-line);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 2.7rem;
+  padding: 0.55rem 1.05rem;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+    background-color 0.12s ease, border-color 0.12s ease,
+    color 0.12s ease, opacity 0.12s ease;
+}
+
+.ic {
+  width: 1.1em;
+  height: 1.1em;
+  flex: 0 0 auto;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible,
+.skip-link:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+button.primary,
+button.action {
+  background: var(--note);
+  border-color: var(--note);
+  color: var(--on-note);
+  box-shadow: 0 1px 2px rgba(20, 74, 40, 0.25);
+}
+
+button.primary:hover:not(:disabled),
+button.action:hover:not(:disabled) {
+  background: var(--note-deep);
+  border-color: var(--note-deep);
+  color: var(--on-note);
+  box-shadow: 0 4px 14px rgba(20, 74, 40, 0.28);
+}
+
+button.secondary {
+  background: var(--field);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+button.secondary:hover:not(:disabled) {
+  border-color: var(--note);
+  color: var(--note);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Device panel
+   -------------------------------------------------------------------------- */
 
 .device-summary {
   margin: 0.7rem 0;
@@ -282,83 +622,30 @@ h2 {
   flex-wrap: wrap;
 }
 
-button {
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: var(--paper);
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease,
-    background-color 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
-}
-
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-button:focus-visible,
-input:focus-visible,
-summary:focus-visible {
-  outline: 2px solid var(--note);
-  outline-offset: 2px;
-}
-
-button.primary,
-button.action {
-  background: var(--note);
-  border-color: var(--note);
-  color: #fff;
-}
-
-button.primary:hover:not(:disabled),
-button.action:hover:not(:disabled) {
-  background: var(--note-deep);
-  border-color: var(--note-deep);
-  color: var(--paper);
-}
-
-button.secondary {
-  background: var(--field);
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-button.secondary:hover:not(:disabled) {
-  border-color: var(--line-strong);
-}
-
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
 #device-list {
   border: 0;
   padding: 0;
   margin: 1rem 0 0;
+  min-height: 0;
 }
 
 #device-list legend {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
   padding: 0;
+  margin-bottom: 0.35rem;
 }
 
 .empty-device-list {
   margin: 0.5rem 0 0;
+  padding: 0.85rem 0.9rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
   color: var(--ink-soft);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
 .contacts-list {
@@ -384,6 +671,7 @@ button:disabled {
 
 .contacts-list button {
   padding: 0.25rem 0.6rem;
+  min-height: 0;
   font-size: 0.78rem;
 }
 
@@ -391,16 +679,24 @@ button:disabled {
   display: flex;
   gap: 0.7rem;
   align-items: center;
-  border-top: 1px solid var(--line);
-  padding: 0.7rem 0.25rem;
-  margin: 0 -0.25rem;
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.75rem;
+  margin: 0.45rem 0;
   border-radius: var(--radius-sm);
+  background: var(--panel-2);
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
 }
 
 .device-option:hover {
+  border-color: var(--note);
   background: var(--row-hover);
+}
+
+.device-option:has(input:checked) {
+  border-color: var(--note);
+  background: var(--row-hover);
+  box-shadow: 0 0 0 1px var(--note);
 }
 
 .device-option input {
@@ -427,162 +723,198 @@ button:disabled {
 .device-message {
   min-height: 1.3rem;
   margin: 0.7rem 0 0;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--note);
+  overflow-wrap: anywhere;
 }
 
 .device-help {
-  margin: 0.5rem 0 0;
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--line);
   color: var(--ink-soft);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.55;
 }
 
-.note {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
-  padding: 1.5rem 1.4rem;
-  margin: 1.15rem 0;
-  color: var(--note-ink);
-  background: var(--note-grad);
-  border: 1px solid var(--note-line);
-  box-shadow: var(--shadow-md);
-}
+/* --------------------------------------------------------------------------
+   Wallet panel
+   -------------------------------------------------------------------------- */
 
-.note::after {
-  content: "";
-  position: absolute;
-  inset: 0.4rem;
-  border: 1px dashed var(--note-seal);
-  border-radius: calc(var(--radius) - 4px);
-  pointer-events: none;
-}
-
-.note-grid {
-  position: absolute;
-  inset: 0;
-  background-image: repeating-radial-gradient(
-      circle at 18% 22%,
-      var(--note-seal) 0 1px,
-      transparent 1px 10px
-    ),
-    repeating-radial-gradient(
-      circle at 82% 78%,
-      var(--note-seal) 0 1px,
-      transparent 1px 13px
-    );
-  opacity: 0.55;
-  pointer-events: none;
-}
-
-.note-body {
-  position: relative;
-  z-index: 1;
-}
-
-.note .label {
-  color: var(--note-label);
-}
-
-#denomination {
-  margin: 0.35rem 0 0.5rem;
-  font-size: clamp(2.75rem, 12vw, 3.6rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--note-deep);
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  margin: 0;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
-  background: var(--note-status-bg);
-  font: 0.72rem/1.4 var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--note-status-ink);
-}
-
-.status::before {
-  content: "";
-  width: 0.5em;
-  height: 0.5em;
-  margin-right: 0.45em;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.55;
-}
-
-.note-seal {
-  position: absolute;
-  right: 1.2rem;
-  bottom: 1.1rem;
-  z-index: 1;
-  width: 3.2rem;
-  height: 3.2rem;
+.wallet-facts {
   display: grid;
-  place-items: center;
-  border: 2px solid var(--note-seal);
-  border-radius: 50%;
-  font: 700 0.78rem/1 var(--mono);
-  letter-spacing: 0.06em;
-  color: var(--note-seal);
-  transform: rotate(-11deg);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+  margin: 1rem 0;
 }
+
+.wallet-facts div {
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+}
+
+.wallet-facts dt {
+  font: 0.66rem/1.4 var(--mono);
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wallet-facts dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.wallet-help {
+  margin: 0.55rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+/* --------------------------------------------------------------------------
+   Workflow
+   -------------------------------------------------------------------------- */
 
 .workflow {
-  border-top: 3px solid var(--gold);
+  border-color: var(--gold-line);
 }
 
-.workflow-heading-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: start;
-}
-
-.workflow-heading-row h2 {
-  margin: 0.15rem 0 0;
-}
-
-.workflow-step {
-  font: 700 0.72rem/1.2 var(--mono);
-  letter-spacing: 0.12em;
-  color: var(--gold);
-  border: 1px solid var(--gold-line);
+.workflow-mode {
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   background: var(--gold-bg);
-  border-radius: 999px;
-  padding: 0.3rem 0.65rem;
-  white-space: nowrap;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .workflow-help {
-  margin: 0.7rem 0 0;
+  margin: 0.9rem 0 0;
   font-size: 0.85rem;
   color: var(--ink-soft);
 }
 
-.workflow-mode {
-  margin: 0.9rem 0 0;
-  padding: 0.65rem 0.75rem;
-  border-left: 3px solid var(--gold);
-  background: var(--gold-bg);
-  color: var(--ink-soft);
-  font-size: 0.78rem;
-  line-height: 1.45;
+/* Stepper ------------------------------------------------------------------ */
+
+.stepper {
+  list-style: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
 }
+
+.stepper::before {
+  content: "";
+  position: absolute;
+  top: 0.95rem;
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 2px;
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+
+.step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.15rem 0;
+}
+
+.step-dot {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  background: var(--panel);
+  font: 700 0.78rem/1 var(--mono);
+  color: var(--ink-soft);
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.step-name {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.step-hint {
+  display: block;
+  font: 0.66rem/1.4 var(--mono);
+  color: var(--ink-soft);
+  opacity: 0.85;
+}
+
+.step-name,
+.step-hint {
+  transition: color 0.15s ease;
+}
+
+.stepper[data-step="1"] .step:nth-child(1) .step-dot,
+.stepper[data-step="2"] .step:nth-child(1) .step-dot,
+.stepper[data-step="3"] .step:nth-child(1) .step-dot,
+.stepper[data-step="2"] .step:nth-child(2) .step-dot,
+.stepper[data-step="3"] .step:nth-child(2) .step-dot,
+.stepper[data-step="3"] .step:nth-child(3) .step-dot {
+  border-color: var(--note);
+  background: var(--note);
+  color: var(--on-note);
+}
+
+.stepper[data-step="1"] .step:nth-child(1) .step-dot,
+.stepper[data-step="2"] .step:nth-child(2) .step-dot,
+.stepper[data-step="3"] .step:nth-child(3) .step-dot {
+  box-shadow: 0 0 0 4px var(--note-tint);
+}
+
+.stepper[data-step="1"] .step:nth-child(1) .step-name,
+.stepper[data-step="2"] .step:nth-child(1) .step-name,
+.stepper[data-step="3"] .step:nth-child(1) .step-name,
+.stepper[data-step="2"] .step:nth-child(2) .step-name,
+.stepper[data-step="3"] .step:nth-child(2) .step-name,
+.stepper[data-step="3"] .step:nth-child(3) .step-name {
+  color: var(--note);
+}
+
+.stepper[data-step="1"] .step:nth-child(1) .step-hint,
+.stepper[data-step="2"] .step:nth-child(2) .step-hint,
+.stepper[data-step="3"] .step:nth-child(3) .step-hint {
+  color: var(--note);
+  opacity: 1;
+}
+
+@media (max-width: 34rem) {
+  .step-hint {
+    display: none;
+  }
+}
+
+/* QVAC ---------------------------------------------------------------------- */
 
 .qvac-form {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.75rem;
   align-items: end;
-  margin-top: 1rem;
-  padding: 0.9rem;
+  margin-top: 1.1rem;
+  padding: 1rem;
   border: 1px solid var(--note-line);
   border-radius: var(--radius-sm);
   background: var(--note-tint);
@@ -592,39 +924,69 @@ button:disabled {
   min-width: 0;
 }
 
+.qvac-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--note);
+}
+
 .qvac-form button {
   min-height: 2.65rem;
   white-space: nowrap;
 }
 
 .qvac-status {
-  margin: 0.5rem 0 0;
-  font: 0.72rem/1.45 var(--mono);
+  margin: 0.6rem 0 0;
+  font: 0.74rem/1.5 var(--mono);
   color: var(--note);
+  overflow-wrap: anywhere;
 }
+
+/* Actions -------------------------------------------------------------------- */
 
 .workflow-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: 1.1rem;
+}
+
+.workflow-actions .action {
+  grid-column: span 2;
+}
+
+.workflow-actions .secondary {
+  grid-column: span 3;
 }
 
 .workflow-actions button {
   min-height: 3.4rem;
-  font-size: 1.02rem;
+  font-size: 1rem;
 }
 
 #workflow-message {
-  margin: 0.9rem 0 0;
-  font-size: 0.82rem;
-  color: var(--note);
+  margin: 0.95rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-size: 0.86rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
 }
+
+#workflow-message:empty {
+  display: none;
+}
+
+/* Recovery -------------------------------------------------------------------- */
 
 .recovery {
   margin-top: 1rem;
-  padding: 0.85rem 0.9rem;
+  padding: 0.95rem 1rem;
   border: 1px solid var(--gold-line);
+  border-left: 4px solid var(--gold);
   border-radius: var(--radius-sm);
   background: var(--gold-bg);
 }
@@ -634,13 +996,28 @@ button:disabled {
 }
 
 .recovery-note {
-  margin: 0 0 0.7rem;
-  font-size: 0.82rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
   color: var(--gold-ink);
+  overflow-wrap: anywhere;
 }
 
+.recovery-note::before {
+  content: "⚠ ";
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Advanced / chat
+   -------------------------------------------------------------------------- */
+
 .chat {
-  padding: 0.5rem 1.4rem 1rem;
+  padding: 0.5rem 1.45rem 1.1rem;
+}
+
+.chat::before {
+  background: var(--line-strong);
 }
 
 .chat details {
@@ -649,13 +1026,14 @@ button:disabled {
 
 .chat summary {
   cursor: pointer;
-  padding: 0.7rem 0.2rem;
+  padding: 0.75rem 0.2rem;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
   list-style: none;
+  user-select: none;
 }
 
 .chat summary::-webkit-details-marker {
@@ -674,11 +1052,20 @@ button:disabled {
   transform: rotate(90deg);
 }
 
+.chat .workflow-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.6rem;
+}
+
+.chat .workflow-actions .secondary {
+  grid-column: auto;
+}
+
 .chat form {
   display: flex;
   gap: 0.5rem;
   align-items: end;
-  margin-top: 0.5rem;
+  margin-top: 0.9rem;
 }
 
 label {
@@ -692,8 +1079,8 @@ input {
   width: 100%;
   font: inherit;
   font-size: 0.9rem;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid var(--line);
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--field);
   color: var(--ink);
@@ -701,46 +1088,66 @@ input {
 }
 
 input:hover {
-  border-color: var(--line-strong);
+  border-color: var(--note);
 }
 
-pre {
-  max-width: 36rem;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--code);
-  font: 0.76rem/1.5 var(--mono);
+input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.7;
 }
 
 #log {
   list-style: none;
   padding: 0;
-  margin: 0.3rem 0 1rem;
+  margin: 1rem 0;
   min-height: 4rem;
 }
 
 #log li {
   margin: 0.45rem 0;
-  padding: 0.5rem 0.7rem;
+  padding: 0.55rem 0.75rem;
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   background: var(--log);
+  overflow-wrap: anywhere;
+}
+
+#log li::before {
+  font: 700 0.66rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+  color: var(--ink-soft);
 }
 
 #log li.you {
   color: var(--ink-soft);
   background: transparent;
-  padding-left: 0;
+  border: 1px dashed var(--line);
 }
 
+#log li.you::before {
+  content: "you";
+}
+
+#log li.bot {
+  border: 1px solid var(--line);
+}
+
+#log li.bot::before {
+  content: "dock";
+  color: var(--note);
+}
+
+/* --------------------------------------------------------------------------
+   Credits
+   -------------------------------------------------------------------------- */
+
 .credits {
-  margin: 1.5rem 0 0;
+  margin: 2rem 0 0;
   color: var(--ink-soft);
   text-align: center;
-  font: 0.68rem/1.5 var(--mono);
+  font: 0.72rem/1.5 var(--mono);
 }
 
 .credits a {
@@ -751,19 +1158,27 @@ pre {
   color: var(--note);
 }
 
+/* --------------------------------------------------------------------------
+   Confirmation dialog
+   -------------------------------------------------------------------------- */
+
 dialog {
-  border: 1px solid var(--line);
+  border: 1px solid var(--gold-line);
+  border-top: 4px solid var(--gold);
   border-radius: var(--radius);
-  padding: 1.4rem 1.5rem;
-  max-width: 40rem;
+  padding: 1.5rem 1.6rem;
+  width: min(34rem, calc(100vw - 3rem));
+  max-height: calc(100dvh - 3rem);
+  overflow: auto;
+  overscroll-behavior: contain;
   box-shadow: var(--shadow-md);
   color: var(--ink);
   background: var(--panel);
 }
 
 dialog::backdrop {
-  background: rgba(10, 10, 7, 0.5);
-  backdrop-filter: blur(2px);
+  background: rgba(10, 10, 7, 0.55);
+  backdrop-filter: blur(3px);
 }
 
 dialog h2 {
@@ -771,14 +1186,38 @@ dialog h2 {
 }
 
 #confirm-note {
-  font-size: 0.85rem;
-  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+dialog pre {
+  margin: 0.9rem 0 1.1rem;
+  max-width: none;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--code);
+  font: 0.76rem/1.6 var(--mono);
+  box-shadow: inset 0 1px 3px rgba(23, 22, 15, 0.06);
+}
+
+dialog label {
+  font-weight: 700;
+}
+
+dialog input {
+  margin-top: 0.4rem;
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
 }
 
 .confirm-error {
   display: none;
-  margin: 0.7rem 0 0;
-  padding: 0.55rem 0.7rem;
+  margin: 0.8rem 0 0;
+  padding: 0.6rem 0.75rem;
   border: 1px solid var(--danger-line);
   border-radius: var(--radius-sm);
   background: var(--danger-bg);
@@ -792,11 +1231,15 @@ dialog h2 {
 
 menu {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   justify-content: end;
   padding: 0;
-  margin: 1rem 0 0;
+  margin: 1.1rem 0 0;
 }
+
+/* --------------------------------------------------------------------------
+   Motion
+   -------------------------------------------------------------------------- */
 
 @keyframes rise {
   from {
@@ -823,34 +1266,46 @@ menu {
 
 @media (prefers-reduced-motion: no-preference) {
   .masthead,
+  main > .note,
   main > section {
     animation: rise 0.5s ease both;
   }
-  main > section:nth-of-type(1) {
+  main > .note {
     animation-delay: 0.05s;
   }
-  main > section:nth-of-type(2) {
-    animation-delay: 0.1s;
+  .duo > section:nth-child(1) {
+    animation: rise 0.5s ease 0.1s both;
   }
-  main > section:nth-of-type(3) {
-    animation-delay: 0.15s;
+  .duo > section:nth-child(2) {
+    animation: rise 0.5s ease 0.15s both;
   }
-  main > section:nth-of-type(4) {
+  main > section.workflow {
     animation-delay: 0.2s;
+  }
+  main > section.chat {
+    animation-delay: 0.25s;
   }
   .status::before {
     animation: pulse 2.4s ease-in-out infinite;
   }
+  .stepper[data-step="1"] .step:nth-child(1) .step-dot,
+  .stepper[data-step="2"] .step:nth-child(2) .step-dot,
+  .stepper[data-step="3"] .step:nth-child(3) .step-dot {
+    animation: pulse 2.2s ease-in-out infinite;
+  }
 }
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
 
 @media (max-width: 34rem) {
   main {
-    padding: 1.5rem 1rem 3rem;
+    padding: 1.6rem 1rem 3rem;
   }
-  .device-heading-row {
-    align-items: center;
-  }
-  .wallet-heading-row {
+  .device-heading-row,
+  .wallet-heading-row,
+  .workflow-heading-row {
     align-items: center;
   }
   .wallet-facts {
@@ -868,13 +1323,46 @@ menu {
   .qvac-form {
     grid-template-columns: 1fr;
   }
+  .workflow-actions {
+    grid-template-columns: 1fr;
+  }
+  .workflow-actions .action,
+  .workflow-actions .secondary {
+    grid-column: auto;
+  }
+  .note {
+    padding: 1.35rem 1.2rem;
+  }
   .note-seal {
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    top: 0.9rem;
+    right: 0.9rem;
+  }
+  .note-watermark {
+    font-size: 9rem;
+    right: 1rem;
+  }
+  .step {
+    gap: 0.45rem;
+  }
+  .step-dot {
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 0.68rem;
+  }
+  .stepper::before {
+    top: 0.8rem;
+  }
+  .step-name {
+    font-size: 0.82rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   * {
     transition: none !important;
     animation: none !important;

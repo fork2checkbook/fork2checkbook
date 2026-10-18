@@ -71,6 +71,8 @@ async function refresh() {
     workflowStep.textContent = bearer
       ? "Step " + bearer.step + " · " + (bearer.offline ? "offline" : "online")
       : "Ready · inspect card";
+    const stepper = document.getElementById("workflow-stepper");
+    if (stepper) stepper.dataset.step = bearer ? String(bearer.step) : "";
     activeRole = bill.role;
     const recoveryActive = Boolean(bill.recovery);
     const registered = Boolean(bill.device && bill.device.registered);
